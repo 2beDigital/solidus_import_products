@@ -9,6 +9,7 @@ module Spree
   class SkuError < StandardError; end;
 
   class ProductImport < ActiveRecord::Base
+    attr_accessible :data_file, :data_file_file_name, :data_file_content_type, :data_file_file_size, :data_file_updated_at, :product_ids, :state, :failed_at, :completed_at
     has_attached_file :data_file, :path => ":rails_root/lib/etc/product_data/data-files/:basename.:extension"
     validates_attachment_presence :data_file
 
