@@ -194,7 +194,9 @@ module Spree
         variant.save
 
         #Associate our new variant with any new taxonomies
+        log("Associating taxonomies")
         Spree::ProductImport.settings[:taxonomy_fields].each do |field|
+          log("taxonomy_field: #{field} - #{options[:with][field.to_sym]}")
           associate_product_with_taxon(variant.product, field.to_s, options[:with][field.to_sym])
         end
 
@@ -254,7 +256,9 @@ module Spree
 
 
         #Associate our new product with any taxonomies that we need to worry about
+        logger.info "\nAssociating taxonomies\n"
         Spree::ProductImport.settings[:taxonomy_fields].each do |field|
+          logger.info "taxonomy_field: #{field} - #{options[:with][field.to_sym]}"
           associate_product_with_taxon(product, field.to_s, params_hash[field.to_sym])
         end
 
