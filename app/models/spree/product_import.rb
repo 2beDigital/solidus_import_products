@@ -360,7 +360,9 @@ module Spree
     # If it fails altogether, it logs it and exits the method.
     def fetch_remote_image(filename)
       begin
-        open(filename)
+        io = open(URI.parse(filename))
+        io.original_filename = File.basename(URI.parse(filename).path)
+        return io
       rescue OpenURI::HTTPError => error
         log("Image #{filename} retrival returned #{error.message}, so this image was not imported")
       rescue
