@@ -361,12 +361,12 @@ module Spree
     def fetch_remote_image(filename)
       begin
         io = open(URI.parse(filename))
-        io.original_filename = File.basename(URI.parse(filename).path)
+        def io.original_filename; base_uri.path.split('/').last; end
         return io
       rescue OpenURI::HTTPError => error
         log("Image #{filename} retrival returned #{error.message}, so this image was not imported")
-      rescue
-        log("Image #{filename} could not be downloaded, so was not imported.")
+      rescue => error
+        log("Image #{filename} could not be downloaded, so was not imported. #{error.message}")
       end
     end
 

@@ -8,6 +8,5 @@ tmp
 nbproject
 *.swp
 .rvmrc
-Gemfile.lock
 .bundle
 spec/dummy
