@@ -328,7 +328,8 @@ module Spree
       file = filename =~ /\Ahttp[s]*:\/\// ? fetch_remote_image(filename) : fetch_local_image(filename)
       #An image has an attachment (the image file) and some object which 'views' it
       product_image = Spree::Image.new({:attachment => file,
-                                :viewable => product_or_variant,
+                                :viewable_id => product_or_variant.id,
+                                :viewable_type => product_or_variant.class.name,
                                 :position => product_or_variant.images.length
                                 })
 
@@ -356,11 +357,13 @@ module Spree
     # If it fails altogether, it logs it and exits the method.
     def fetch_remote_image(filename)
       begin
-        open(filename)
+        io = open(URI.parse(filename))
+        def io.original_filename; base_uri.path.split('/').last; end
+        return io
       rescue OpenURI::HTTPError => error
         log("Image #{filename} retrival returned #{error.message}, so this image was not imported")
-      rescue
-        log("Image #{filename} could not be downloaded, so was not imported.")
+      rescue => error
+        log("Image #{filename} could not be downloaded, so was not imported. #{error.message}")
       end
     end
 
