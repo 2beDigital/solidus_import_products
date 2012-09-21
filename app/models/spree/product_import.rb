@@ -248,9 +248,14 @@ module Spree
 
       #This should be caught by code in the main import code that checks whether to create
       #variants or not. Since that check can be turned off, however, we should double check.
-      if @names_of_products_before_import.include? product.name
-        log("#{product.name} is already in the system.\n")
+      p = Spree::Product.find_by_name(product.name)
+      if @names_of_products_before_import.include? product.name and !p.deleted_at.nil?
+        log("#{product.name} is already in the system and active.\n")
       else
+        if !p.deleted_at.nil?
+          p.destroy
+          log("#{product.name} was removed from the system and will be replaced.\n")
+        end
         #Save the object before creating asssociated objects
         product.save and product_ids << product.id
 
