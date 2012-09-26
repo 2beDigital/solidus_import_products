@@ -252,7 +252,7 @@ module Spree
       if @names_of_products_before_import.include? product.name and p.deleted_at.nil?
         log("#{product.name} is already in the system and active.\n")
       else
-        if !p.deleted_at.nil?
+        if !p.nil? && !p.deleted_at.nil?
           p.destroy
           log("#{product.name} was removed from the system and will be replaced.\n")
         end
