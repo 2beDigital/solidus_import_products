@@ -117,6 +117,7 @@ module Spree
 
           #Manually set available_on if it is not already set
           product_information[:available_on] = Date.today - 1.day if product_information[:available_on].nil?
+          product_information[:master_price] = 0
           log("#{pp product_information}")
 
           variant_comparator_field = Spree::ProductImport.settings[:variant_comparator_field].try :to_sym
