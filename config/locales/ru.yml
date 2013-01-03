@@ -1,0 +1,17 @@
+ru:
+  product_import_processing: 'Ваш импорт добавлен в очередь. На почту придет извещение по окончании импорта..'
+  product_imports: 'Импорт'
+  delete_product_import: "Удалить"
+  delete_product_import_successful: "Импорт и связанные товары удалены"
+  confirm_delete_product_import: "Удаление импорта уничтожит связанные товары. Продолжить?"
+  product_import:
+    state:
+      created: "Создан"
+      started: "В процессе"
+      completed: "Готово"
+      failed: "Ошибка"
+  form:
+    product_import:
+      heading: 'Импорт из CSV'
+      new:
+        data_file: "Файл с данными"
