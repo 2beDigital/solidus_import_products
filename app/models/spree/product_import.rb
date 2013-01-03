@@ -117,7 +117,7 @@ module Spree
 
           #Manually set available_on if it is not already set
           product_information[:available_on] = Date.today - 1.day if product_information[:available_on].nil?
-          product_information[:master_price] = 0
+          #product_information[:price] = 0
           log("#{pp product_information}")
 
           variant_comparator_field = Spree::ProductImport.settings[:variant_comparator_field].try :to_sym
@@ -172,7 +172,7 @@ module Spree
 
       #Remap the options - oddly enough, Spree's product model has master_price and cost_price, while
       #variant has price and cost_price.
-      options[:with][:price] = options[:with].delete(:master_price)
+      options[:with][:price] = options[:with].delete(:price)
 
       #First, set the primitive fields on the object (prices, etc.)
       options[:with].each do |field, value|
@@ -226,7 +226,7 @@ module Spree
       #The product is inclined to complain if we just dump all params
       # into the product (including images and taxonomies).
       # What this does is only assigns values to products if the product accepts that field.
-      params_hash[:price] ||= params_hash[:master_price]
+      # params_hash[:price] ||= params_hash[:master_price]
       params_hash.each do |field, value|
         if product.respond_to?("#{field}=")
           product.send("#{field}=", value)
@@ -411,7 +411,7 @@ module Spree
 
     # May be implemented via decorator if useful:
     #
-    #    ProductImport.class_eval do
+    #    Spree::ProductImport.class_eval do
     #
     #      private
     #
