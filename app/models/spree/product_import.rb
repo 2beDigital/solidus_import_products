@@ -229,7 +229,8 @@ module Spree
       special_fields  = ProductImport.settings.values_at(
                           :image_fields,
                           :taxonomy_fields,
-                          :store_field
+                          :store_field,
+                          :variant_comparator_field
                         ).flatten.map(&:to_s)
 
       #The product is inclined to complain if we just dump all params
