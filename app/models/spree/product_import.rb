@@ -320,7 +320,12 @@ module Spree
     def get_column_mappings(row)
       mappings = {}
       row.each_with_index do |heading, index|
-        mappings[heading.downcase.gsub(/\A\s*/, '').chomp.gsub(/\s/, '_').to_sym] = index
+        # Stop collecting headings, if heading is empty
+        if not heading.blank?
+          mappings[heading.downcase.gsub(/\A\s*/, '').chomp.gsub(/\s/, '_').to_sym] = index
+        else
+          break
+        end
       end
       mappings
     end
