@@ -1,29 +1,41 @@
-<div class="toolbar" data-hook="toolbar">
-  <ul class="actions">
-    <li id="delete_product_import">
-      <%= button_link_to t(:delete_product_import), admin_product_import_path(@product_import), {:method => :delete, :confirm => t("confirm_delete_product_import")} %>
-    </li>
-  </ul>
-  <br class="clear" />
-</div>
+<% content_for :page_title do %>
+  <%= t(:show_product_import) %>
+<% end %>
 
-<h1><%= t(:show_product_import) %></h1>
+<% content_for :page_actions do %>
+  <li>
+    <%= button_link_to t(:back_to_product_imports), admin_product_imports_path, :icon => 'icon-arrow-left' %>
+  </li>
+  <li id="delete_product_import">
+    <%= button_link_to t(:delete_product_import), admin_product_import_path(@product_import), {:icon => 'icon-remove', :method => :delete, :confirm => t("confirm_delete_product_import")} %>
+  </li> 
+<% end %>
 
 <table class="index" id="listing_products">
-  <tr data-hook="admin_products_index_headers">
-    <th><%= t(:sku) %></th>
-    <th><%= t(:name) %></th>
-    <th><%= t(:master_price) %></th>
-    <th data-hook="admin_products_index_header_actions"></th>
-  </tr>
-<% @products.each do |product| %>
-  <tr <%= "style='color: red;'" if product.deleted? %> id="<%= dom_id product %>" data-hook="admin_products_index_rows">
+  <colgroup>
+    <col style="width: 20%">
+    <col style="width: 50%">
+    <col style="width: 20%">
+    <col style="width: 10%">
+  </colgroup>
+  <thead>
+    <tr data-hook="admin_products_index_headers">
+      <th><%= t(:sku) %></th>
+      <th><%= t(:name) %></th>
+      <th><%= t(:master_price) %></th>
+      <th class="actions" data-hook="admin_products_index_header_actions"></th>
+    </tr>
+ </thead>
+ <tbody>
+ <% @products.each do |product| %>
+  <tr class="<%= cycle('odd', 'even') %>" <%= "style='color: red;'" if product.deleted? %> id="<%= dom_id product %>" data-hook="admin_products_index_rows">
     <td><%= product.sku rescue '' %></td>
     <td><%= product.name rescue '' %></td>
     <td><%= number_to_currency product.price rescue '' %></td>
     <td class="actions" data-hook="admin_products_index_row_actions">
-      <%= link_to "Edit", edit_admin_product_path(product), :class => 'edit' unless product.deleted? %>
+      <%= link_to_with_icon 'icon-edit', t(:edit), edit_admin_product_path(product), :no_text => true, :data => {:action => 'edit'} unless product.deleted? %>
     </td>
   </tr>
-<% end %>
+  <% end %>
+  </tbody>
 </table>

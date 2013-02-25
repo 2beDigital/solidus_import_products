@@ -101,9 +101,7 @@ module Spree
 
         log("Importing products for #{self.data_file_file_name} began at #{Time.now}")
         rows[ProductImport.settings[:rows_to_skip]..-1].each do |row|
-
           product_information = {}
-
           #Automatically map 'mapped' fields to a collection of product information.
           #NOTE: This code will deal better with the auto-mapping function - i.e. if there
           #are named columns in the spreadsheet that correspond to product
