@@ -408,15 +408,21 @@ module Spree
     # taxons with that product. This form should also work with format 1.
     def associate_product_with_taxon(product, taxonomy, taxon_hierarchy)
       return if product.nil? || taxonomy.nil? || taxon_hierarchy.nil?
+      
       #Using find_or_create_by_name is more elegant, but our magical params code automatically downcases
       # the taxonomy name, so unless we are using MySQL, this isn't going to work.
-      taxonomy_name = taxonomy
-      taxonomy = Taxonomy.find(:first, :conditions => ["lower(name) = ?", taxonomy])
-      taxonomy = Taxonomy.create(:name => taxonomy_name.capitalize) if taxonomy.nil? && ProductImport.settings[:create_missing_taxonomies]
+      # taxonomy_name = taxonomy
+      # taxonomy = Taxonomy.find(:first, :conditions => ["lower(name) = ?", taxonomy])
+      # taxonomy = Taxonomy.create(:name => taxonomy_name.capitalize) if taxonomy.nil? && ProductImport.settings[:create_missing_taxonomies]
 
-      taxon_hierarchy.split(/\s*\&\s*/).each do |hierarchy|
+      taxon_hierarchy.split(/\s*\|\s*/).each do |hierarchy|
         hierarchy = hierarchy.split(/\s*>\s*/)
+        
+        taxonomy = Taxonomy.find(:first, :conditions => ["lower(name) = ?", hierarchy.first])
+        taxonomy = Taxonomy.create(:name => hierarchy.first.capitalize) if taxonomy.nil? && ProductImport.settings[:create_missing_taxonomies]
         last_taxon = taxonomy.root
+        
+        hierarchy.shift
         hierarchy.each do |taxon|
           last_taxon = last_taxon.children.find_or_create_by_name_and_taxonomy_id(taxon, taxonomy.id)
         end
