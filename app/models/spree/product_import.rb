@@ -256,7 +256,7 @@ module Spree
 
       #This should be caught by code in the main import code that checks whether to create
       #variants or not. Since that check can be turned off, however, we should double check.
-      p = Product.find_by_sku(product.sku)
+      p = Spree::Variant.find_by_sku(product.sku)
       if @skus_of_products_before_import.include? product.sku and p.deleted_at.nil?
         log("#{product.name} is already in the system and active.\n")
       else
