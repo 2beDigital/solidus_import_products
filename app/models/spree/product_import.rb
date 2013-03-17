@@ -1,4 +1,4 @@
-# This model is the master routine for uploading products
+p# This model is the master routine for uploading products
 # Requires Paperclip and CSV to upload the CSV file and read it nicely.
 
 # Original Author:: Josh McArthur
@@ -89,7 +89,7 @@ module Spree
       begin
         #Get products *before* import -
         @products_before_import = Spree::Product.all
-        @names_of_products_before_import = @products_before_import.map(&:name)
+        @skus_of_products_before_import = @products_before_import.map(&:sku)
 
         rows = CSV.read(self.data_file.path)
 
@@ -256,8 +256,8 @@ module Spree
 
       #This should be caught by code in the main import code that checks whether to create
       #variants or not. Since that check can be turned off, however, we should double check.
-      p = Product.find_by_name(product.name)
-      if @names_of_products_before_import.include? product.name and p.deleted_at.nil?
+      p = Product.find_by_sku(product.sku)
+      if @skus_of_products_before_import.include? product.sku and p.deleted_at.nil?
         log("#{product.name} is already in the system and active.\n")
       else
         if !p.nil? && !p.deleted_at.nil?
