@@ -10,6 +10,7 @@ module ImportProducts
 
     def perform
       begin
+        Delayed::Worker.logger.debug("Entering perform....")
         product_import = Spree::ProductImport.find(self.product_import_id)
         results = product_import.import_data!(Spree::ProductImport.settings[:transaction])
         Spree::UserMailer.product_import_results(Spree::User.find(self.user_id)).deliver

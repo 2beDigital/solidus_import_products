@@ -80,7 +80,7 @@ module Spree
         _import_data
       end
     rescue Exception => exp
-      log("An error occurred during import, please check file and try again. (#{exp.message})\n#{exp.backtrace.join('\n')}", :error)
+      Delayed::Worker.logger.debug("An error occurred during import, please check file and try again. (#{exp.message})\n#{exp.backtrace.join('\n')}", :error)
       failure
       raise ImportError, exp.message
     end
@@ -99,7 +99,7 @@ module Spree
           col = ProductImport.settings[:column_mappings]
         end
 
-        log("Importing products for #{self.data_file_file_name} began at #{Time.now}")
+        Delayed::Worker.logger.debug("Importing products for #{self.data_file_file_name} began at #{Time.now}")
         rows[ProductImport.settings[:rows_to_skip]..-1].each do |row|
           product_information = {}
           #Automatically map 'mapped' fields to a collection of product information.
@@ -116,7 +116,11 @@ module Spree
           #Manually set available_on if it is not already set
           product_information[:available_on] = Date.today - 1.day if product_information[:available_on].nil?
           #product_information[:price] = 0
-          log("#{pp product_information}")
+
+          sc = Spree::ShippingCategory.first
+          product_information[:shipping_category_id] = sc.id unless sc.nil?
+
+          Delayed::Worker.logger.debug("#{pp product_information}")
 
           variant_comparator_field = ProductImport.settings[:variant_comparator_field].try :to_sym
           variant_comparator_column = col[variant_comparator_field]
@@ -124,11 +128,12 @@ module Spree
           if ProductImport.settings[:create_variants] and variant_comparator_column and
             p = Product.where(variant_comparator_field => row[variant_comparator_column]).first
 
-            log("found product with this field #{variant_comparator_field}=#{row[variant_comparator_column]}")
+            Delayed::Worker.logger.debug("found product with this field #{variant_comparator_field}=#{row[variant_comparator_column]}")
             p.update_attribute(:deleted_at, nil) if p.deleted_at #Un-delete product if it is there
             p.variants.each { |variant| variant.update_attribute(:deleted_at, nil) }
             create_variant_for(p, :with => product_information)
           else
+            Delayed::Worker.logger.debug("Going into create_product_using")
             next unless create_product_using(product_information)
           end
         end
@@ -137,7 +142,7 @@ module Spree
           @products_before_import.each { |p| p.destroy }
         end
 
-        log("Importing products for #{self.data_file_file_name} completed at #{DateTime.now}")
+        Delayed::Worker.logger.debug("Importing products for #{self.data_file_file_name} completed at #{DateTime.now}")
       end
       #All done!
       complete
@@ -166,7 +171,7 @@ module Spree
       end
 
       field = ProductImport.settings[:variant_comparator_field]
-      log  "VARIANT:: #{variant.inspect}  /// #{options.inspect } /// #{options[:with][field]} /// #{field}"
+      Delayed::Worker.logger.debug "VARIANT:: #{variant.inspect}  /// #{options.inspect } /// #{options[:with][field]} /// #{field}"
 
       #Remap the options - oddly enough, Spree's product model has master_price and cost_price, while
       #variant has price and cost_price.
@@ -187,15 +192,15 @@ module Spree
         end
       end
 
-      log "VARIANT PRICE #{variant.inspect} /// #{variant.price}"
+       Delayed::Worker.logger.debug "VARIANT PRICE #{variant.inspect} /// #{variant.price}"
 
       if variant.valid?
         variant.save
 
         #Associate our new variant with any new taxonomies
-        log("Associating taxonomies")
+        Delayed::Worker.logger.debug("Associating taxonomies")
         ProductImport.settings[:taxonomy_fields].each do |field|
-          log("taxonomy_field: #{field} - #{options[:with][field.to_sym]}")
+          Delayed::Worker.logger.debug("taxonomy_field: #{field} - #{options[:with][field.to_sym]}")
           associate_product_with_taxon(variant.product, field.to_s, options[:with][field.to_sym])
         end
 
@@ -205,9 +210,9 @@ module Spree
         end
 
         #Log a success message
-        log("Variant of SKU #{variant.sku} successfully imported.\n")
+        Delayed::Worker.logger.debug("Variant of SKU #{variant.sku} successfully imported.\n")
       else
-        log("A variant could not be imported - here is the information we have:\n" +
+        Delayed::Worker.logger.debug("A variant could not be imported - here is the information we have:\n" +
             "#{pp options[:with]}, #{variant.errors.full_messages.join(', ')}")
         return false
       end
@@ -237,7 +242,7 @@ module Spree
       params_hash.each do |field, value|
         if product.respond_to?("#{field}=")
           product.send("#{field}=", value)
-        elsif not special_fields.include?(field.to_s) and property = Property.where(:name => field).first
+        elsif not special_fields.include?(field.to_s) and property = Property.where("lower(name) = ?", field).first
           properties_hash[property] = value
         end
       end
@@ -246,44 +251,52 @@ module Spree
 
       #We can't continue without a valid product here
       unless product.valid?
-        log(msg = "A product could not be imported - here is the information we have:\n" +
+        Delayed::Worker.logger.debug(msg = "A product could not be imported - here is the information we have:\n" +
             "#{pp params_hash}, #{product.errors.full_messages.join(', ')}")
         raise ProductError, msg
       end
 
       #Just log which product we're processing
-      log(product.name)
+      Delayed::Worker.logger.debug(product.name)
 
       #This should be caught by code in the main import code that checks whether to create
       #variants or not. Since that check can be turned off, however, we should double check.
       p = Spree::Variant.find_by_sku(product.sku)
       if @skus_of_products_before_import.include? product.sku and p.deleted_at.nil?
-        log("#{product.name} is already in the system and active.\n")
+        Delayed::Worker.logger.debug("#{product.name} is already in the system and active.\n")
       else
         if !p.nil? && !p.deleted_at.nil?
           p.destroy
-          log("#{product.name} was removed from the system and will be replaced.\n")
+          Delayed::Worker.logger.debug("#{product.name} was removed from the system and will be replaced.\n")
         end
-        
+
         #Save the object before creating asssociated objects
+        Delayed::Worker.logger.debug("#{product.name}")
         product.save and product_ids << product.id
+        Delayed::Worker.logger.debug("Saved object before creating associated objects for: #{product.name}")
 
         #Associate properties with product
         properties_hash.each do |property, value|
-          product_property = ProductProperty.where(:product_id => product.id, :property_id => property.id).first_or_initialize
+          product_property = Spree::ProductProperty.where(:product_id => product.id, :property_id => property.id).first_or_initialize
           product_property.value = value
           product_property.save!
         end
+
+        Delayed::Worker.logger.debug("Associated properties with product")
 
         #Associate our new product with any taxonomies that we need to worry about
         ProductImport.settings[:taxonomy_fields].each do |field|
           associate_product_with_taxon(product, field.to_s, params_hash[field.to_sym])
         end
 
+        Delayed::Worker.logger.debug("Associated product with any taxonomies that we needed to worry about")
+
         #Finally, attach any images that have been specified
         ProductImport.settings[:image_fields].each do |field|
           find_and_attach_image_to(product, params_hash[field.to_sym])
         end
+
+        Delayed::Worker.logger.debug("Attached images to product")
 
         if ProductImport.settings[:multi_domain_importing] && product.respond_to?(:stores)
           begin
@@ -297,12 +310,17 @@ module Spree
 
             product.stores << store
           rescue
-            log("#{product.name} could not be associated with a store. Ensure that Spree's multi_domain extension is installed and that fields are mapped to the CSV correctly.")
+            Delayed::Worker.logger.debug("#{product.name} could not be associated with a store. Ensure that Spree's multi_domain extension is installed and that fields are mapped to the CSV correctly.")
           end
         end
 
+        #Stock item
+        source_location = Spree::StockLocation.find_by(name: 'default')
+        stock_item = product.stock_items.where(stock_location_id: source_location.id).first
+        stock_item.set_count_on_hand(params_hash[:on_hand])
+
         #Log a success message
-        log("#{product.name} successfully imported.\n")
+        Delayed::Worker.logger.debug("#{product.name} successfully imported.\n")
       end
       return true
     end
@@ -353,14 +371,19 @@ module Spree
 
       #The image can be fetched from an HTTP or local source - either method returns a Tempfile
       file = filename =~ /\Ahttp[s]*:\/\// ? fetch_remote_image(filename) : fetch_local_image(filename)
+
       #An image has an attachment (the image file) and some object which 'views' it
-      product_image = Image.new({:attachment => file,
+      product_image = Spree::Image.new({:attachment => file,
                                 :viewable_id => product_or_variant.id,
-                                :viewable_type => product_or_variant.class.name,
+                                :viewable_type => "Spree::Variant",
                                 :position => product_or_variant.images.length
                                 })
 
+      Delayed::Worker.logger.debug("#{product_image.viewable_id} : #{product_image.viewable_type} : #{product_image.position}")
+      Delayed::Worker.logger.debug("About to save image for #{product_or_variant.name}")
+
       product_or_variant.images << product_image if product_image.save
+      Delayed::Worker.logger.debug("Saved image to product: #{product_or_variant.name}") 
     end
 
     # This method is used when we have a set location on disk for
@@ -369,7 +392,7 @@ module Spree
     def fetch_local_image(filename)
       filename = ProductImport.settings[:product_image_path] + filename
       unless File.exists?(filename) && File.readable?(filename)
-        log("Image #{filename} was not found on the server, so this image was not imported.", :warn)
+        Delayed::Worker.logger.debug("Image #{filename} was not found on the server, so this image was not imported.", :warn)
         return nil
       else
         return File.open(filename, 'rb')
@@ -383,14 +406,16 @@ module Spree
     # If it fails, it in the first instance logs the HTTP error (404, 500 etc)
     # If it fails altogether, it logs it and exits the method.
     def fetch_remote_image(filename)
+      Delayed::Worker.logger.debug("Fetching remote image...")
       begin
         io = open(URI.parse(filename))
         def io.original_filename; base_uri.path.split('/').last; end
+        Delayed::Worker.logger.debug("Returning remote image...")
         return io
       rescue OpenURI::HTTPError => error
-        log("Image #{filename} retrival returned #{error.message}, so this image was not imported")
+        Delayed::Worker.logger.debug("Image #{filename} retrival returned #{error.message}, so this image was not imported")
       rescue => error
-        log("Image #{filename} could not be downloaded, so was not imported. #{error.message}")
+        Delayed::Worker.logger.debug("Image #{filename} could not be downloaded, so was not imported. #{error.message}")
       end
     end
 
@@ -408,7 +433,7 @@ module Spree
     # taxons with that product. This form should also work with format 1.
     def associate_product_with_taxon(product, taxonomy, taxon_hierarchy)
       return if product.nil? || taxonomy.nil? || taxon_hierarchy.nil?
-      
+
       #Using find_or_create_by_name is more elegant, but our magical params code automatically downcases
       # the taxonomy name, so unless we are using MySQL, this isn't going to work.
       # taxonomy_name = taxonomy
@@ -417,14 +442,14 @@ module Spree
 
       taxon_hierarchy.split(/\s*\|\s*/).each do |hierarchy|
         hierarchy = hierarchy.split(/\s*>\s*/)
-        
-        taxonomy = Taxonomy.find(:first, :conditions => ["lower(name) = ?", hierarchy.first])
+        taxonomy = Spree::Taxonomy.where("lower(name) = ?", hierarchy.first.downcase).first
         taxonomy = Taxonomy.create(:name => hierarchy.first.capitalize) if taxonomy.nil? && ProductImport.settings[:create_missing_taxonomies]
         last_taxon = taxonomy.root
-        
+
         hierarchy.shift
         hierarchy.each do |taxon|
-          last_taxon = last_taxon.children.find_or_create_by_name_and_taxonomy_id(taxon, taxonomy.id)
+          #last_taxon = last_taxon.children.find_or_create_by_name_and_taxonomy_id(taxon, taxonomy.id)
+          last_taxon = last_taxon.children.find_or_create_by(name: taxon, taxonomy_id: taxonomy.id)
         end
 
         #Spree only needs to know the most detailed taxonomy item
@@ -447,5 +472,3 @@ module Spree
     end
   end
 end
-
-
