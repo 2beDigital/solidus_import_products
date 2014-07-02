@@ -92,7 +92,8 @@ module Spree
         @skus_of_products_before_import = @products_before_import.map(&:sku)
 
         Delayed::Worker.logger.debug("Opening File")
-        rows = CSV.read(self.data_file.path, :encoding => 'windows-1251:utf-8')
+        #rows = CSV.read(self.data_file.path, :encoding => 'windows-1251:utf-8')
+        rows = CSV.read(self.data_file.path)
 
         Delayed::Worker.logger.debug("File opened successfully")
         if ProductImport.settings[:first_row_is_headings]
