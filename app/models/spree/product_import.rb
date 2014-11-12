@@ -12,6 +12,7 @@ module Spree
     #attr_accessible :data_file, :data_file_file_name, :data_file_content_type, :data_file_file_size, :data_file_updated_at, :product_ids, :state, :failed_at, :completed_at
     has_attached_file :data_file, :path => ":rails_root/lib/etc/product_data/data-files/:basename.:extension"
     validates_attachment_presence :data_file
+    validates_attachment :data_file, :presence => true, content_type: { content_type: "text/csv" }
 
     after_destroy :destroy_products
 
@@ -72,37 +73,33 @@ module Spree
 
     def import_data!(_transaction=true)
       start
-      if _transaction
-        transaction do
+        if _transaction
+          transaction do
+            _import_data
+          end
+        else
           _import_data
         end
-      else
-        _import_data
-      end
-    rescue Exception => exp
-      Delayed::Worker.logger.debug("An error occurred during import, please check file and try again. (#{exp.message})\n#{exp.backtrace.join('\n')}", :error)
-      failure
-      raise ImportError, exp.message
+      rescue Exception => exp
+        Delayed::Worker.logger.debug("An error occurred during import, please check file and try again. (#{exp.message})\n#{exp.backtrace.join('\n')}", :error)
+        failure
+        raise ImportError, exp.message
     end
 
     def _import_data
       begin
-        Delayed::Worker.logger.debug("Getting all Products")
         @products_before_import = Spree::Product.all
         @skus_of_products_before_import = @products_before_import.map(&:sku)
 
-        Delayed::Worker.logger.debug("Opening File")
         #rows = CSV.read(self.data_file.path, :encoding => 'windows-1251:utf-8')
         rows = CSV.read(self.data_file.path)
 
-        Delayed::Worker.logger.debug("File opened successfully")
         if ProductImport.settings[:first_row_is_headings]
           col = get_column_mappings(rows[0])
         else
           col = ProductImport.settings[:column_mappings]
         end
 
-        Delayed::Worker.logger.debug("Importing products for #{self.data_file_file_name} began at #{Time.now}")
         rows[ProductImport.settings[:rows_to_skip]..-1].each do |row|
           product_information = {}
           #Automatically map 'mapped' fields to a collection of product information.
@@ -131,12 +128,10 @@ module Spree
           if ProductImport.settings[:create_variants] and variant_comparator_column and
             p = Product.where(variant_comparator_field => row[variant_comparator_column]).first
 
-            Delayed::Worker.logger.debug("found product with this field #{variant_comparator_field}=#{row[variant_comparator_column]}")
             p.update_attribute(:deleted_at, nil) if p.deleted_at #Un-delete product if it is there
             p.variants.each { |variant| variant.update_attribute(:deleted_at, nil) }
             create_variant_for(p, :with => product_information)
           else
-            Delayed::Worker.logger.debug("Going into create_product_using")
             next unless create_product_using(product_information)
           end
         end
@@ -145,7 +140,6 @@ module Spree
           @products_before_import.each { |p| p.destroy }
         end
 
-        Delayed::Worker.logger.debug("Importing products for #{self.data_file_file_name} completed at #{DateTime.now}")
       end
       #All done!
       complete

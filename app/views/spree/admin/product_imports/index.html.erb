@@ -37,7 +37,7 @@
   <tbody>
   <% Spree::ProductImport.order("created_at DESC").all.each do |import| %>
     <tr>
-      <td><%= time_ago_in_words import.created_at, true -%> ago</td>
+      <td><%= time_ago_in_words import.created_at -%> ago</td>
       <td><%= link_to import.data_file_file_name, admin_product_import_path(import) -%></td>
       <td><%= t(import.state, :scope => "product_import.state") -%></td>
       <td><%= time_ago_in_words import.state_datetime -%> ago</td>
