@@ -2,27 +2,31 @@
   <%= t('form.product_import.heading') %>
 <% end %>
 
+<div class="row">
+<div class="col-sm-6">
 <%= form_for([:admin, @product_import], :method => :post, :html => { :multipart => true }) do |f| %>
-<fieldset class="no-border-top">
-  <%= f.field_container :data_file do %>
+  <fieldset class="no-border-top">
+  <%= f.field_container :data_file, class: ['form-group'] do  %>
     <%= f.label :data_file, t('form.product_import.new.data_file') %>
     <%= f.file_field :data_file %>
     <%= f.error_message_on :data_file %>
   <% end %>
-  <div data-hook="buttons" class="filter-actions actions">
-    <%= button t(:create), 'icon-ok' %>
+  <div data-hook="buttons" class="form-actions">
+    <%= button Spree.t('actions.create'), 'ok', 'submit', {class: 'btn-success'} %>
   </div>
-</fieldset>
+  </fieldset>
 <% end %>
+</div>
+</div>
 
-<table class="index">
+<table class="table">
   <colgroup>
     <col style="width: 15%">
-    <col style="width: 35%">
-    <col style="width: 15%">
+    <col style="width: 40%">
+    <col style="width: 10%">
     <col style="width: 15%">
     <col style="width: 10%">
-    <col style="width: 10%">
+    <col style="width: 5%">
   </colgroup>
   <thead>
   <tr>
@@ -30,20 +34,20 @@
     <th>CSV Name</th>
     <th>Status</th>
     <th>Date Status</th>
-    <th>Products imported</th>
+    <th>Imported</th>
     <th class="actions">Actions</th>
   </tr>
   </thead>
   <tbody>
   <% Spree::ProductImport.order("created_at DESC").all.each do |import| %>
-    <tr>
+    <tr class="<%= cycle('odd', 'even') %>" id="<%= dom_id import %>">
       <td><%= time_ago_in_words import.created_at -%> ago</td>
       <td><%= link_to import.data_file_file_name, admin_product_import_path(import) -%></td>
-      <td><%= t(import.state, :scope => "product_import.state") -%></td>
+      <td><span class="label label-<%= import.state.downcase %>"><%= t(import.state, :scope => "product_import.state") -%></span></td>
       <td><%= time_ago_in_words import.state_datetime -%> ago</td>
       <td><%= import.product_ids.size -%></td>
-      <td class="actions">
-        <%= link_to_delete import,:url => admin_product_import_path(import), :no_text => true -%>
+      <td class="actions text-center">
+        <%= link_to_delete import, :url => admin_product_import_path(import), :no_text => true -%>
       </td>
     </tr>
   <% end %>
