@@ -72,7 +72,6 @@ module Spree
     # Meta keywords and description are created on the product model
 
     def import_data!(_transaction=true)
-      start
         if _transaction
           transaction do
             _import_data
@@ -80,10 +79,6 @@ module Spree
         else
           _import_data
         end
-      rescue Exception => exp
-        Delayed::Worker.logger.debug("An error occurred during import, please check file and try again. (#{exp.message})\n#{exp.backtrace.join('\n')}", :error)
-        failure
-        raise ImportError, exp.message
     end
 
     def _import_data
@@ -102,6 +97,7 @@ module Spree
 
         rows[ProductImport.settings[:rows_to_skip]..-1].each do |row|
           product_information = {}
+
           #Automatically map 'mapped' fields to a collection of product information.
           #NOTE: This code will deal better with the auto-mapping function - i.e. if there
           #are named columns in the spreadsheet that correspond to product
@@ -120,7 +116,7 @@ module Spree
           sc = Spree::ShippingCategory.first
           product_information[:shipping_category_id] = sc.id unless sc.nil?
 
-          Delayed::Worker.logger.debug("#{pp product_information}")
+          log("#{pp product_information}")
 
           variant_comparator_field = ProductImport.settings[:variant_comparator_field].try :to_sym
           variant_comparator_column = col[variant_comparator_field]
@@ -141,7 +137,8 @@ module Spree
         end
 
       end
-      #All done!
+
+      # Finished Importing!
       complete
       return [:notice, "Product data was successfully imported."]
     end
@@ -168,13 +165,15 @@ module Spree
       end
 
       field = ProductImport.settings[:variant_comparator_field]
-      Delayed::Worker.logger.debug "VARIANT:: #{variant.inspect}  /// #{options.inspect } /// #{options[:with][field]} /// #{field}"
+      log "VARIANT:: #{variant.inspect}  /// #{options.inspect } /// #{options[:with][field]} /// #{field}"
 
       #Remap the options - oddly enough, Spree's product model has master_price and cost_price, while
       #variant has price and cost_price.
+
       options[:with][:price] = options[:with].delete(:price)
 
       #First, set the primitive fields on the object (prices, etc.)
+
       options[:with].each do |field, value|
         variant.send("#{field}=", value) if variant.respond_to?("#{field}=")
         applicable_option_type = OptionType.find(:first, :conditions => [
@@ -189,15 +188,13 @@ module Spree
         end
       end
 
-       Delayed::Worker.logger.debug "VARIANT PRICE #{variant.inspect} /// #{variant.price}"
+      log "VARIANT PRICE #{variant.inspect} /// #{variant.price}"
 
       if variant.valid?
         variant.save
 
         #Associate our new variant with any new taxonomies
-        Delayed::Worker.logger.debug("Associating taxonomies")
         ProductImport.settings[:taxonomy_fields].each do |field|
-          Delayed::Worker.logger.debug("taxonomy_field: #{field} - #{options[:with][field.to_sym]}")
           associate_product_with_taxon(variant.product, field.to_s, options[:with][field.to_sym])
         end
 
@@ -207,9 +204,9 @@ module Spree
         end
 
         #Log a success message
-        Delayed::Worker.logger.debug("Variant of SKU #{variant.sku} successfully imported.\n")
+        log("Variant of SKU #{variant.sku} successfully imported.\n")
       else
-        Delayed::Worker.logger.debug("A variant could not be imported - here is the information we have:\n" +
+        log("A variant could not be imported - here is the information we have:\n" +
             "#{pp options[:with]}, #{variant.errors.full_messages.join(', ')}")
         return false
       end
@@ -248,29 +245,28 @@ module Spree
 
       #We can't continue without a valid product here
       unless product.valid?
-        Delayed::Worker.logger.debug(msg = "A product could not be imported - here is the information we have:\n" +
+        log(msg = "A product could not be imported - here is the information we have:\n" +
             "#{pp params_hash}, #{product.errors.full_messages.join(', ')}")
         raise ProductError, msg
       end
 
       #Just log which product we're processing
-      Delayed::Worker.logger.debug(product.name)
+      log(product.name)
 
       #This should be caught by code in the main import code that checks whether to create
       #variants or not. Since that check can be turned off, however, we should double check.
       p = Spree::Variant.find_by_sku(product.sku)
       if @skus_of_products_before_import.include? product.sku and p.deleted_at.nil?
-        Delayed::Worker.logger.debug("#{product.name} is already in the system and active.\n")
+        log("#{product.name} is already in the system and active.\n")
       else
         if !p.nil? && !p.deleted_at.nil?
           p.destroy
-          Delayed::Worker.logger.debug("#{product.name} was removed from the system and will be replaced.\n")
+          log("#{product.name} was removed from the system and will be replaced.\n")
         end
 
         #Save the object before creating asssociated objects
-        Delayed::Worker.logger.debug("#{product.name}")
         product.save and product_ids << product.id
-        Delayed::Worker.logger.debug("Saved object before creating associated objects for: #{product.name}")
+        log("Saved object before creating associated objects for: #{product.name}")
 
         #Associate properties with product
         properties_hash.each do |property, value|
@@ -279,21 +275,16 @@ module Spree
           product_property.save!
         end
 
-        Delayed::Worker.logger.debug("Associated properties with product")
-
         #Associate our new product with any taxonomies that we need to worry about
         ProductImport.settings[:taxonomy_fields].each do |field|
           associate_product_with_taxon(product, field.to_s, params_hash[field.to_sym])
         end
 
-        Delayed::Worker.logger.debug("Associated product with any taxonomies that we needed to worry about")
 
         #Finally, attach any images that have been specified
         ProductImport.settings[:image_fields].each do |field|
           find_and_attach_image_to(product, params_hash[field.to_sym])
         end
-
-        Delayed::Worker.logger.debug("Attached images to product")
 
         if ProductImport.settings[:multi_domain_importing] && product.respond_to?(:stores)
           begin
@@ -307,7 +298,7 @@ module Spree
 
             product.stores << store
           rescue
-            Delayed::Worker.logger.debug("#{product.name} could not be associated with a store. Ensure that Spree's multi_domain extension is installed and that fields are mapped to the CSV correctly.")
+            log("#{product.name} could not be associated with a store. Ensure that Spree's multi_domain extension is installed and that fields are mapped to the CSV correctly.")
           end
         end
 
@@ -316,8 +307,7 @@ module Spree
         stock_item = product.stock_items.where(stock_location_id: source_location.id).first
         stock_item.set_count_on_hand(params_hash[:on_hand])
 
-        #Log a success message
-        Delayed::Worker.logger.debug("#{product.name} successfully imported.\n")
+        log("#{product.name} successfully imported.\n")
       end
       return true
     end
@@ -346,12 +336,12 @@ module Spree
 
     ### MISC HELPERS ####
 
-    #Log a message to a file - logs in standard Rails format to logfile set up in the import_products initializer
-    #and console.
-    #Message is string, severity symbol - either :info, :warn or :error
+    # Log a message to a file - logs in standard Rails format to logfile set up in the import_products initializer
+    # and console.
+    # Message is string, severity symbol - either :info, :warn or :error
 
     def log(message, severity = :info)
-      @rake_log ||= ActiveSupport::BufferedLogger.new(ProductImport.settings[:log_to])
+      @rake_log ||= ActiveSupport::Logger.new(ProductImport.settings[:log_to])
       message = "[#{Time.now.to_s(:db)}] [#{severity.to_s.capitalize}] #{message}\n"
       @rake_log.send severity, message
       puts message
@@ -376,11 +366,9 @@ module Spree
                                 :position => product_or_variant.images.length
                                 })
 
-      Delayed::Worker.logger.debug("#{product_image.viewable_id} : #{product_image.viewable_type} : #{product_image.position}")
-      Delayed::Worker.logger.debug("About to save image for #{product_or_variant.name}")
+      log("#{product_image.viewable_id} : #{product_image.viewable_type} : #{product_image.position}")
 
       product_or_variant.images << product_image if product_image.save
-      Delayed::Worker.logger.debug("Saved image to product: #{product_or_variant.name}") 
     end
 
     # This method is used when we have a set location on disk for
@@ -389,7 +377,7 @@ module Spree
     def fetch_local_image(filename)
       filename = ProductImport.settings[:product_image_path] + filename
       unless File.exists?(filename) && File.readable?(filename)
-        Delayed::Worker.logger.debug("Image #{filename} was not found on the server, so this image was not imported.", :warn)
+        log("Image #{filename} was not found on the server, so this image was not imported.", :warn)
         return nil
       else
         return File.open(filename, 'rb')
@@ -403,16 +391,14 @@ module Spree
     # If it fails, it in the first instance logs the HTTP error (404, 500 etc)
     # If it fails altogether, it logs it and exits the method.
     def fetch_remote_image(filename)
-      Delayed::Worker.logger.debug("Fetching remote image...")
       begin
         io = open(URI.parse(filename))
         def io.original_filename; base_uri.path.split('/').last; end
-        Delayed::Worker.logger.debug("Returning remote image...")
         return io
       rescue OpenURI::HTTPError => error
-        Delayed::Worker.logger.debug("Image #{filename} retrival returned #{error.message}, so this image was not imported")
+        log("Image #{filename} retrival returned #{error.message}, so this image was not imported")
       rescue => error
-        Delayed::Worker.logger.debug("Image #{filename} could not be downloaded, so was not imported. #{error.message}")
+        log("Image #{filename} could not be downloaded, so was not imported. #{error.message}")
       end
     end
 
