@@ -72,6 +72,7 @@ module Spree
     # Meta keywords and description are created on the product model
 
     def import_data!(_transaction=true)
+        start
         if _transaction
           transaction do
             _import_data
