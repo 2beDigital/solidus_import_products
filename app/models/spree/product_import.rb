@@ -129,7 +129,8 @@ module Spree
             p.variants.each { |variant| variant.update_attribute(:deleted_at, nil) }
             create_variant_for(p, :with => product_information)
           else
-            next unless create_product_using(product_information)
+             next if @skus_of_products_before_import.include?(product_information[:sku])
+             next unless create_product_using(product_information)
           end
         end
 
@@ -304,7 +305,7 @@ module Spree
         end
 
         #Stock item
-        source_location = Spree::StockLocation.find_by(name: 'default')
+        source_location = Spree::StockLocation.find_by(name: 'Central')
         stock_item = product.stock_items.where(stock_location_id: source_location.id).first
         stock_item.set_count_on_hand(params_hash[:on_hand])
 
