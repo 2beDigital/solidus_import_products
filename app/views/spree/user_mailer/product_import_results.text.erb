@@ -1,6 +1,9 @@
 Hello,
 
 <% if @error_message %>
+--
+  <%= @error_message %>
+--
   Something went wrong during the product import.
   Common causes for this include:
   - Badly formatted CSV
