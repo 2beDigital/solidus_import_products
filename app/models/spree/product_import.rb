@@ -307,6 +307,7 @@ module Spree
         #Stock item
         source_location = Spree::StockLocation.find_by(name: 'Central')
         stock_item = product.stock_items.where(stock_location_id: source_location.id).first
+        puts "=============================== GOING TO HELL FROM HERE"
         stock_item.set_count_on_hand(params_hash[:on_hand])
 
         log("#{product.name} successfully imported.\n")
