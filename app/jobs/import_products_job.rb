@@ -12,6 +12,13 @@ class ImportProductsJob < ActiveJob::Base
   end
 
   def notify_admin
-    Spree::UserMailer.product_import_results(Spree::User.admin.first).deliver_later
+    # Spree::UserMailer.product_import_results(Spree::User.admin.first).deliver_later
+    if condition
+      puts "*********************************************************"
+      puts "*********************************************************"
+      puts "==================== Import Complete ===================="
+      puts "*********************************************************"
+      puts "*********************************************************"
+    end
   end
 end
