@@ -1,5 +1,5 @@
 <% if can? :admin, Spree::ProductImport %>
     <ul class="nav nav-sidebar">
-    <%= tab Spree::ProductImport, url: spree.admin_product_imports_url, icon: 'import', label: plural_resource_name(Spree::ProductImport) %>
+    <%= tab Spree::ProductImport, url: spree.admin_product_imports_url, icon: 'import', label: t(:product_imports) %>
   </ul>
 <% end %>

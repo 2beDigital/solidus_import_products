@@ -13,7 +13,15 @@ module Spree
 
       def create
         @product_import = Spree::ProductImport.create(product_import_params)
-        ImportProductsJob.perform_later(@product_import)
+
+        numProds=@product_import.productsCount
+        if (numProds > Spree::ProductImport.settings[:num_prods_for_delayed])
+          ImportProductsJob.perform_later(@product_import.id)
+        else
+          @product_import.import_data!(Spree::ProductImport.settings[:transaction])
+        end
+        #product_import.import()
+        #ImportProductsJob.perform_later(@product_import)
         flash[:notice] = t('product_import_processing')
         redirect_to admin_product_imports_path
       end
