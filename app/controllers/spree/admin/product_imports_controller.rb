@@ -12,7 +12,9 @@ module Spree
       end
 
       def create
-        @product_import = Spree::ProductImport.create(product_import_params)
+        @product_import = Spree::ProductImport.new(product_import_params)
+				@product_import.created_by=spree_current_user.id
+				@product_import.save
 
         numProds=@product_import.productsCount
         if (numProds > Spree::ProductImport.settings[:num_prods_for_delayed])

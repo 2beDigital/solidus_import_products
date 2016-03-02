@@ -14,7 +14,7 @@ module Spree
     validates_attachment_presence :data_file
     validates_attachment :data_file, :presence => true, content_type: { content_type: "text/csv" }
 
-    # after_destroy :destroy_products
+    after_destroy :destroy_products
 
     serialize :product_ids, Array
     cattr_accessor :settings
@@ -27,10 +27,10 @@ module Spree
     require 'pp'
     require 'open-uri'
 
-    # def destroy_products
-    #   products.destroy_all
-    # end
-
+    def destroy_products
+			products.delete_all
+    end
+			
     state_machine :initial => :created do
 
       event :start do
@@ -64,7 +64,7 @@ module Spree
       rows = CSV.parse(open(self.data_file.url).read)
       delayed=rows.count>Spree::ProductImport.settings[:num_prods_for_delayed]
       if (delayed)
-        ImportProductsJob.perform_later({product: self})
+        ImportProductsJob.perform_later(self.id)
       else
         import_data!(Spree::ProductImport.settings[:transaction])
       end
@@ -213,16 +213,24 @@ module Spree
         end
       end
 
-      #The product is inclined to complain if we just dump all params
-      # into the product (including images and taxonomies).
-      # What this does is only assigns values to products if the product accepts that field.
-      product_hash.each do |field, value|
+      params_hash.each do |field, value|
         if product.respond_to?("#{field}=")
           product.send("#{field}=", value)
         elsif not special_fields.include?(field.to_s) and property = Property.where("lower(name) = ?", field).first
           properties_hash[property] = value
         end
       end
+
+      #The product is inclined to complain if we just dump all params
+      # into the product (including images and taxonomies).
+      # What this does is only assigns values to products if the product accepts that field.
+      # product_hash.each do |field, value|
+      #   if product.respond_to?("#{field}=")
+      #     product.send("#{field}=", value)
+      #   elsif not special_fields.include?(field.to_s) and property = Property.where("lower(name) = ?", field).first
+      #     properties_hash[property] = value
+      #   end
+      # end
 
       save_product(product,params_hash,properties_hash)
     end
