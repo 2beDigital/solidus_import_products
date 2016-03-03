@@ -28,7 +28,7 @@ module Spree
     require 'open-uri'
 
     def destroy_products
-			products.delete_all
+			products.destroy_all
     end
 			
     state_machine :initial => :created do
@@ -213,7 +213,7 @@ module Spree
         end
       end
 
-      params_hash.each do |field, value|
+      product_hash.each do |field, value|
         if product.respond_to?("#{field}=")
           product.send("#{field}=", value)
         elsif not special_fields.include?(field.to_s) and property = Property.where("lower(name) = ?", field).first
@@ -518,7 +518,7 @@ module Spree
     #      end
     #    end
     def after_product_built(product, params_hash)
-      add_translations(product, params_hash)
+      #add_translations(product, params_hash)
     end
 
     def add_translations(product, params_hash)

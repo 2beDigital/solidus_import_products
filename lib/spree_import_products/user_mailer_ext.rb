@@ -1,4 +1,4 @@
-module ImportProducts
+module SpreeImportProducts
   module UserMailerExt
     def self.included(base)
       base.class_eval do
