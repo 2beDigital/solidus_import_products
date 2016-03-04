@@ -1,18 +1,18 @@
-en:
-    product_import_processing: 'Gracias, su importación ha sido encolada para procesarse. Usted recibirá un mail de confirmación una vez se haya completado la importación.'
-    product_imports: 'Importar Productos'
-    delete_product_import: "Borrar"
-    back_to_product_imports: "Volver a Importar Productos"
-    delete_product_import_successful: "La importación y los productos asociados se han borrado"
-    confirm_delete_product_import: "Al borrar esta importación, se borrarán todos los productos asociados. Está usted seguro?"
+es:
+  product_import_processing: "Gracias, su importación ha sido encolada para procesarse. Usted recibirá un mail de confirmación una vez se haya completado la importación."
+  product_imports: "Importar Productos"
+  delete_product_import: "Borrar"
+  back_to_product_imports: "Volver a Importar Productos"
+  delete_product_import_successful: "La importación y los productos asociados se han borrado"
+  confirm_delete_product_import: "Al borrar esta importación, se borrarán todos los productos asociados. Está usted seguro?"
+  product_import:
+    state:
+      created: "Creado"
+      started: "En Progreso"
+      completed: "Completado"
+      failed: "Error"
+  form:
     product_import:
-      state:
-        created: "Creado"
-        started: "En Progreso"
-        completed: "Completado"
-        failed: "Error"
-    form:
-        product_import:
-            heading: 'Importar Productos desde CSV'
-            new:
-                data_file: "Fichero de productos"
+      heading: "Importar Productos desde CSV"
+      new:
+        data_file: "Fichero de productos"
