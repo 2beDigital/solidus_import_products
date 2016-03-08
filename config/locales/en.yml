@@ -1,6 +1,7 @@
 en:
-  product_import_processing: 'Thanks, your import has been added to the queue for processing. You will receive an email confirming the import once it has completed.'
-  product_imports: 'Import Products'
+  product_import_processing: "Thanks, your import has been added to the queue for processing. You will receive an email confirming the import once it has completed."
+  product_import_imported: "Products imported successfully"
+  product_imports: "Import Products"
   delete_product_import: "Delete"
   back_to_product_imports: "Back to Product Imports"
   delete_product_import_successful: "Import and products associated deleted successfully"
@@ -13,6 +14,6 @@ en:
       failed: "Failed"
   form:
     product_import:
-      heading: 'Import Products from CSV'
+      heading: "Import Products from CSV"
       new:
         data_file: "Product Data File"

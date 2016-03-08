@@ -24,10 +24,11 @@ Spree::ProductImport.settings = {
                           :description => 12,
                           :category => 13
     },
-    :num_prods_for_delayed => 20,
+    :num_prods_for_delayed => 20, #From this number of products, the process is executed in delayed_job. Under it is processed immediately.
     :create_missing_taxonomies => true,
     :taxonomy_fields => [:category, :brand], #Fields that should automatically be parsed for taxons to associate
-    :image_fields => [:image_main, :image_2, :image_3, :image_4], #Image fields that should be parsed for image locations
+    :image_fields_products => [:image_product, :image_product_2, :image_product_3, :image_product_4], #Image fields that should be parsed for image locations for products
+    :image_fields_variants => [:image_variant, :image_variant_2, :image_variant_3, :image_variant_4], #Image fields that should be parsed for image locations for variants
     :product_image_path => "#{Rails.root}/lib/etc/product_data/product-images/", #The location of images on disk
     :rows_to_skip => 1, #If your CSV file will have headers, this field changes how many rows the reader will skip
     :log_to => File.join(Rails.root, '/log/', "import_products_#{Rails.env}.log"), #Where to log to

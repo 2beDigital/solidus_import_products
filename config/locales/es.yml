@@ -1,5 +1,6 @@
 es:
   product_import_processing: "Gracias, su importación ha sido encolada para procesarse. Usted recibirá un mail de confirmación una vez se haya completado la importación."
+  product_import_imported: "Productos importados correctamente"
   product_imports: "Importar Productos"
   delete_product_import: "Borrar"
   back_to_product_imports: "Volver a Importar Productos"

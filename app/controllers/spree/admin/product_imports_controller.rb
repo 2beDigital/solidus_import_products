@@ -17,14 +17,13 @@ module Spree
 				@product_import.save
 
         numProds=@product_import.productsCount
-        if (numProds > Spree::ProductImport.settings[:num_prods_for_delayed])
+        if numProds > Spree::ProductImport.settings[:num_prods_for_delayed]
           ImportProductsJob.perform_later(@product_import.id)
+					flash[:notice] = t('product_import_processing')
         else
           @product_import.import_data!(Spree::ProductImport.settings[:transaction])
+					flash[:notice] = t('product_import_imported')
         end
-        #product_import.import()
-        #ImportProductsJob.perform_later(@product_import)
-        flash[:notice] = t('product_import_processing')
         redirect_to admin_product_imports_path
       end
 

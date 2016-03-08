@@ -12,5 +12,3 @@ Deface::Override.new(
 		text: "<%= configurations_sidebar_menu_item t(:product_imports), spree.admin_product_imports_url %>"
     #partial: 'spree/admin/shared/import_sidebar_menu'
 )
-
-
