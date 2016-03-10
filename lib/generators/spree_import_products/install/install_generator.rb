@@ -15,6 +15,7 @@ module SpreeImportProducts
 
       def add_files
         template 'config/initializers/spree_import_product_settings.rb', 'config/initializers/spree_import_product_settings.rb'
+				template 'scripts/delayed_job', 'scripts/delayed_job'
       end
 
       def run_migrations

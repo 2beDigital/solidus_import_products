@@ -28,9 +28,9 @@ module Spree
     require 'open-uri'
 
     def destroy_products
-			products.destroy_all
+      products.destroy_all
     end
-			
+
     state_machine :initial => :created do
 
       event :start do
@@ -88,14 +88,14 @@ module Spree
     # Meta keywords and description are created on the product model
 
     def import_data!(_transaction=true)
-        start
-        if _transaction
-          transaction do
-            _import_data
-          end
-        else
+      start
+      if _transaction
+        transaction do
           _import_data
         end
+      else
+        _import_data
+      end
     end
 
     def _import_data
@@ -130,10 +130,10 @@ module Spree
           product_information[:available_on] = Date.today - 1.day if product_information[:available_on].nil?
           #product_information[:price] = 0
 
-					if (product_information[:shipping_category_id].nil?)
-						sc = Spree::ShippingCategory.first
-						product_information[:shipping_category_id] = sc.id unless sc.nil?
-					end
+          if (product_information[:shipping_category_id].nil?)
+            sc = Spree::ShippingCategory.first
+            product_information[:shipping_category_id] = sc.id unless sc.nil?
+          end
 
           log("#{pp product_information}",:debug)
 
@@ -141,24 +141,24 @@ module Spree
           variant_comparator_column = col[variant_comparator_field]
 
           if ProductImport.settings[:create_variants] and variant_comparator_column and
-            p = Product.where(Product.table_name+'.'+variant_comparator_field.to_s => row[variant_comparator_column]).only(:product,:where).first
+              p = Product.where(Product.table_name+'.'+variant_comparator_field.to_s => row[variant_comparator_column]).only(:product,:where).first
             # Product exists
             p.update_attribute(:deleted_at, nil) if p.deleted_at #Un-delete product if it is there
             p.variants.each { |variant| variant.update_attribute(:deleted_at, nil) }
             update_product(p,product_information)
             #create_variant_for(p, :with => product_information)
           else
-             if (@skus_of_products_before_import.include?(product_information[:sku]))
-               log("SKU #{product_information[:sku]} exists, but slug #{row[variant_comparator_column]} not exists!! ",:error)
-               next
-             end
-             next unless create_product(product_information)
+            if (@skus_of_products_before_import.include?(product_information[:sku]))
+              log("SKU #{product_information[:sku]} exists, but slug #{row[variant_comparator_column]} not exists!! ",:error)
+              next
+            end
+            next unless create_product(product_information)
           end
         end
 
         #2BeDigital.We disable this option
         #if ProductImport.settings[:destroy_original_products]
-          #@products_before_import.each { |p| p.destroy }
+        #@products_before_import.each { |p| p.destroy }
         #end
 
       end
@@ -171,8 +171,8 @@ module Spree
     private
 
     def create_product(params_hash)
-			
-			log("CREATE PRODUCT:"+params_hash.inspect)
+
+      log("CREATE PRODUCT:"+params_hash.inspect)
 
       product = Product.new
       properties_hash = Hash.new
@@ -198,7 +198,7 @@ module Spree
 
     def update_product(product,params_hash)
 
-			log("UPATE PRODUCT:"+params_hash.inspect)
+      log("UPATE PRODUCT:"+params_hash.inspect)
       properties_hash = Hash.new
 
       # Array of special fields. Prevent adding them to properties.
@@ -210,7 +210,7 @@ module Spree
       ).flatten.map(&:to_s)
 
       product_fields=product.attribute_names
-      product_fields << ProductImport.settings[:price_field].to_s
+      #product_fields << ProductImport.settings[:price_field].to_s
       product_hash=Hash.new
       params_hash.each do |key,value|
         if product_fields.include?(key.to_s)
@@ -219,9 +219,9 @@ module Spree
       end
       params_hash.each do |field, value|
         if (product_fields.include?(field.to_s))
-					if (product.respond_to?("#{field}=") and params_hash[:locale].nil?)
-						product.send("#{field}=", value)
-					end
+          if (product.respond_to?("#{field}=") and params_hash[:locale].nil?)
+            product.send("#{field}=", value)
+          end
         elsif not special_fields.include?(field.to_s) and property = Property.where("lower(name) = ?", field).first
           properties_hash[property] = value
         end
@@ -243,7 +243,7 @@ module Spree
     end
 
     def save_product(product,params_hash,properties_hash)
-			log("SAVE PRODUCT:"+product.inspect)
+      log("SAVE PRODUCT:"+product.inspect)
 
       #We can't continue without a valid product here
       unless product.valid?
@@ -287,7 +287,7 @@ module Spree
 
       #Finally, attach any images that have been specified
       ProductImport.settings[:image_fields_products].each do |field|
-        find_and_attach_image_to(product, params_hash[field.to_sym])
+        find_and_attach_image_to(product, params_hash[field.to_sym], params_hash[ProductImport.settings[:image_text_products].to_sym])
       end
 
       if ProductImport.settings[:multi_domain_importing] && product.respond_to?(:stores)
@@ -363,7 +363,7 @@ module Spree
 
         #Finally, attach any images that have been specified
         ProductImport.settings[:image_fields_variants].each do |field|
-          find_and_attach_image_to(variant, options[:with][field.to_sym])
+          find_and_attach_image_to(variant, options[:with][field.to_sym], options[:with][ProductImport.settings[:image_text_variants].to_sym])
         end
 
         #Log a success message
@@ -378,12 +378,12 @@ module Spree
       source_location = Spree::StockLocation.find_by(default: true)
       if source_location
         stock_item = variant.stock_items.where(stock_location_id: source_location.id).first_or_initialize
-				#Solo updatamos stock si lo ponemos explicitamente.
+        #Solo updatamos stock si lo ponemos explicitamente.
         if (options[:with][:on_hand])
-					#if (options[:with][:locale].nil?)
-					#	stock_item.set_count_on_hand(0)
-					#end
-        #else
+          #if (options[:with][:locale].nil?)
+          #	stock_item.set_count_on_hand(0)
+          #end
+          #else
           stock_item.set_count_on_hand(options[:with][:on_hand])
         end
       end
@@ -432,7 +432,7 @@ module Spree
     # find_and_attach_image_to
     # This method attaches images to products. The images may come
     # from a local source (i.e. on disk), or they may be online (HTTP/HTTPS).
-    def find_and_attach_image_to(product_or_variant, filename)
+    def find_and_attach_image_to(product_or_variant, filename,alt_text)
       return if filename.blank?
 
       #The image can be fetched from an HTTP or local source - either method returns a Tempfile
@@ -440,10 +440,11 @@ module Spree
 
       #An image has an attachment (the image file) and some object which 'views' it
       product_image = Spree::Image.new({:attachment => file,
-                                :viewable_id => product_or_variant.id,
-                                :viewable_type => "Spree::Variant",
-                                :position => product_or_variant.images.length
-                                })
+                                        :viewable_id => product_or_variant.id,
+                                        :viewable_type => "Spree::Variant",
+                                        :alt => alt_text,
+                                        :position => product_or_variant.images.length
+                                       })
 
       log("#{product_image.viewable_id} : #{product_image.viewable_type} : #{product_image.position}",:debug)
 
@@ -547,23 +548,23 @@ module Spree
       #en dos columnas del csv. En una con el valor original, i en otra donde pondremos
       #la traducción.
       if (params_hash.include?(ProductImport.settings[:variant_comparator_field_i18n]) )
-				translations_names.delete(ProductImport.settings[:variant_comparator_field].to_s)
+        translations_names.delete(ProductImport.settings[:variant_comparator_field].to_s)
         #translations_names << ProductImport.settings[:variant_comparator_field_i18n].to_s
       end
       translation=product.translations.where(locale: localeProduct).first_or_initialize
       params_hash.each do |key,value|
         if translations_names.include?(key.to_s)
-					#Detectamos si el campo és el slug traducido, y en tal caso, lo añadimos
+          #Detectamos si el campo és el slug traducido, y en tal caso, lo añadimos
           #con el nombre "slug"
           #if (key.to_s==ProductImport.settings[:variant_comparator_field_i18n].to_s)
-						#translation.send("#{ProductImport.settings[:variant_comparator_field].to_s}=", value)
-            #product.attributes={ProductImport.settings[:variant_comparator_field].to_s => value, :locale => localeProduct}
+          #translation.send("#{ProductImport.settings[:variant_comparator_field].to_s}=", value)
+          #product.attributes={ProductImport.settings[:variant_comparator_field].to_s => value, :locale => localeProduct}
           #else
-						translation.send("#{key.to_s}=", value)
+          translation.send("#{key.to_s}=", value)
           #end
         end
       end
-			translation.save
+      translation.save
 
     end
   end
