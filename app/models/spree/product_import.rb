@@ -77,7 +77,7 @@ module Spree
       elsif completed?
         completed_at
       else
-        Time.now
+        updated_at
       end
     end
 
