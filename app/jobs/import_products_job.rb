@@ -8,6 +8,9 @@ class ImportProductsJob < ActiveJob::Base
 		products=Spree::ProductImport.find(@product_id)
 		user=Spree::User.find(products.created_by)
     Spree::UserMailer.product_import_results(user, exception.message+" "+exception.backtrace.join("\n")).deliver
+    #Hacemos aquí el update para que aunque falle, enviemos el mail igualmente
+    products.error_message=exception.message
+    products.failure
   end
 
   def perform(product_id)

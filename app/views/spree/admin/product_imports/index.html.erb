@@ -22,10 +22,11 @@
 <table class="table">
   <colgroup>
     <col style="width: 15%">
-    <col style="width: 40%">
+    <col style="width: 20%">
     <col style="width: 10%">
     <col style="width: 15%">
     <col style="width: 10%">
+    <col style="width: 20%">
     <col style="width: 5%">
   </colgroup>
   <thead>
@@ -35,17 +36,19 @@
     <th>Status</th>
     <th>Date Status</th>
     <th>Imported</th>
+    <th>Error Message</th>
     <th class="actions">Actions</th>
   </tr>
   </thead>
   <tbody>
   <% Spree::ProductImport.order("created_at DESC").all.each do |import| %>
     <tr class="<%= cycle('odd', 'even') %>" id="<%= dom_id import %>">
-      <td><%= time_ago_in_words import.created_at -%> ago</td>
+      <td><%= I18n.l(import.created_at.to_datetime,format: :short)%></td>
       <td><%= link_to import.data_file_file_name, admin_product_import_path(import) -%></td>
       <td><span class="label label-<%= import.state.downcase %>"><%= t(import.state, :scope => "product_import.state") -%></span></td>
-      <td><%= time_ago_in_words import.state_datetime -%> ago</td>
+      <td><%= I18n.l(import.state_datetime.to_datetime,format: :short) %></td>
       <td><%= import.product_ids.size -%></td>
+      <td><%= import.error_message%></td>
       <td class="actions text-center">
         <%= link_to_delete import, :url => admin_product_import_path(import), :no_text => true -%>
       </td>

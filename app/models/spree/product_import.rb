@@ -149,8 +149,8 @@ module Spree
             #create_variant_for(p, :with => product_information)
           else
             if (@skus_of_products_before_import.include?(product_information[:sku]))
-              log("SKU #{product_information[:sku]} exists, but slug #{row[variant_comparator_column]} not exists!! ",:error)
-              next
+              log(msg="SKU #{product_information[:sku]} exists, but slug #{row[variant_comparator_column]} not exists!! ",:error)
+              raise ProductError, msg
             end
             next unless create_product(product_information)
           end
@@ -160,9 +160,7 @@ module Spree
         #if ProductImport.settings[:destroy_original_products]
         #@products_before_import.each { |p| p.destroy }
         #end
-
       end
-
       # Finished Importing!
       complete
       return [:notice, "Product data was successfully imported."]
@@ -334,7 +332,7 @@ module Spree
       #Remap the options - oddly enough, Spree's product model has master_price and cost_price, while
       #variant has price and cost_price.
 
-      options[:with][:price] = options[:with].delete(:price)
+      #options[:with][:price] = options[:with].delete(:price)
 
       #First, set the primitive fields on the object (prices, etc.)
 
@@ -376,14 +374,14 @@ module Spree
 
       #Stock item
       source_location = Spree::StockLocation.find_by(default: true)
+      log("SourceLocation: #{source_location.inspect}",:debug)
       if source_location
         stock_item = variant.stock_items.where(stock_location_id: source_location.id).first_or_initialize
+        log("StockItem: #{stock_item.inspect}",:debug)
+        log("OnHand: #{options[:with][:on_hand]}",:debug)
         #Solo updatamos stock si lo ponemos explicitamente.
         if (options[:with][:on_hand])
-          #if (options[:with][:locale].nil?)
-          #	stock_item.set_count_on_hand(0)
-          #end
-          #else
+          log("Updating Stock...")
           stock_item.set_count_on_hand(options[:with][:on_hand])
         end
       end

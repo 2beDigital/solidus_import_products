@@ -21,8 +21,14 @@ module Spree
           ImportProductsJob.perform_later(@product_import.id)
 					flash[:notice] = t('product_import_processing')
         else
-          @product_import.import_data!(Spree::ProductImport.settings[:transaction])
-					flash[:notice] = t('product_import_imported')
+          begin
+            @product_import.import_data!(Spree::ProductImport.settings[:transaction])
+					  flash[:notice] = t('product_import_imported')
+          rescue StandardError => e
+            @product_import.error_message=e.message
+            @product_import.failure
+            flash[:error] = e.message
+          end
         end
         redirect_to admin_product_imports_path
       end
