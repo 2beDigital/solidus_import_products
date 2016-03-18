@@ -9,10 +9,10 @@ module Spree
   class SkuError < StandardError; end;
 
   class ProductImport < ActiveRecord::Base
-    #attr_accessible :data_file, :data_file_file_name, :data_file_content_type, :data_file_file_size, :data_file_updated_at, :product_ids, :state, :failed_at, :completed_at
-    has_attached_file :data_file, :path => "/product_data/data-files/:basename.:extension"
+    has_attached_file :data_file, :path => "/product_data/data-files/:basename_:timestamp.:extension"
     validates_attachment_presence :data_file
-    validates_attachment :data_file, :presence => true, content_type: { content_type: ["text/csv", "text/plain"] }
+    #Content type of csv vary in different browsers.
+    validates_attachment :data_file, :presence => true, content_type: { content_type: ["text/csv", "text/plain", "application/octet-stream", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"] }
 
     after_destroy :destroy_products
 
@@ -40,7 +40,7 @@ module Spree
         transition :to => :completed, :from => :started
       end
       event :failure do
-        transition :to => :failed, :from => :started
+        transition :to => :failed, :from => [:created, :started]
       end
 
       before_transition :to => [:failed] do |import|
@@ -54,22 +54,22 @@ module Spree
         import.completed_at = Time.now
       end
     end
-
+    #Return the number of rows in CSV.
     def productsCount
       rows = CSV.parse(open(self.data_file.url).read)
       return rows.count
     end
 
-    def import
-      rows = CSV.parse(open(self.data_file.url).read)
-      delayed=rows.count>Spree::ProductImport.settings[:num_prods_for_delayed]
-      if (delayed)
-        ImportProductsJob.perform_later(self.id)
-      else
-        import_data!(Spree::ProductImport.settings[:transaction])
-      end
-      return delayed
-    end
+    # def import
+    #   rows = CSV.parse(open(self.data_file.url).read)
+    #   delayed=rows.count>Spree::ProductImport.settings[:num_prods_for_delayed]
+    #   if (delayed)
+    #     ImportProductsJob.perform_later(self.id)
+    #   else
+    #     import_data!(Spree::ProductImport.settings[:transaction])
+    #   end
+    #   return delayed
+    # end
 
     def state_datetime
       if failed?
@@ -80,12 +80,6 @@ module Spree
         updated_at
       end
     end
-
-    ## Data Importing:
-    # List Price maps to Master Price, Current MAP to Cost Price, Net 30 Cost unused
-    # Width, height, Depth all map directly to object
-    # Image main is created independtly, then each other image also created and associated with the product
-    # Meta keywords and description are created on the product model
 
     def import_data!(_transaction=true)
       start
@@ -128,7 +122,6 @@ module Spree
 
           #Manually set available_on if it is not already set
           product_information[:available_on] = Date.today - 1.day if product_information[:available_on].nil?
-          #product_information[:price] = 0
 
           if (product_information[:shipping_category_id].nil?)
             sc = Spree::ShippingCategory.first
@@ -146,8 +139,8 @@ module Spree
             p.update_attribute(:deleted_at, nil) if p.deleted_at #Un-delete product if it is there
             p.variants.each { |variant| variant.update_attribute(:deleted_at, nil) }
             update_product(p,product_information)
-            #create_variant_for(p, :with => product_information)
           else
+            #product doesn't exists
             if (@skus_of_products_before_import.include?(product_information[:sku]))
               log(msg="SKU #{product_information[:sku]} exists, but slug #{row[variant_comparator_column]} not exists!! ",:error)
               raise ProductError, msg
@@ -207,14 +200,16 @@ module Spree
           :variant_comparator_field
       ).flatten.map(&:to_s)
 
+      # Here we only update product fields, because we update or create variant
+      # after update the product.
       product_fields=product.attribute_names
-      #product_fields << ProductImport.settings[:price_field].to_s
       product_hash=Hash.new
       params_hash.each do |key,value|
         if product_fields.include?(key.to_s)
           product_hash[key]=value
         end
       end
+      # We only assign fields of the products table.
       params_hash.each do |field, value|
         if (product_fields.include?(field.to_s))
           if (product.respond_to?("#{field}=") and params_hash[:locale].nil?)
@@ -224,18 +219,6 @@ module Spree
           properties_hash[property] = value
         end
       end
-
-
-      #The product is inclined to complain if we just dump all params
-      # into the product (including images and taxonomies).
-      # What this does is only assigns values to products if the product accepts that field.
-      # product_hash.each do |field, value|
-      #   if product.respond_to?("#{field}=")
-      #     product.send("#{field}=", value)
-      #   elsif not special_fields.include?(field.to_s) and property = Property.where("lower(name) = ?", field).first
-      #     properties_hash[property] = value
-      #   end
-      # end
 
       save_product(product,params_hash,properties_hash)
     end
@@ -249,17 +232,6 @@ module Spree
             "#{pp params_hash}, #{product.inspect} #{product.errors.full_messages.join(', ')}",:error)
         raise ProductError, msg
       end
-
-      #This should be caught by code in the main import code that checks whether to create
-      #variants or not. Since that check can be turned off, however, we should double check.
-      #variant = Spree::Variant.find_by_sku(product.sku)
-      # if @skus_of_products_before_import.include? product.sku and v.deleted_at.nil?
-      #   log("#{product.name} is already in the system and active.\n")
-      # else
-      #   if !v.nil? && !v.deleted_at.nil?
-      #     v.destroy
-      #     log("#{product.name} was removed from the system and will be replaced.\n")
-      #   end
 
       log("Save product:"+product.name)
 
@@ -329,13 +301,6 @@ module Spree
       field = ProductImport.settings[:variant_comparator_field]
       log("VARIANT:: #{variant.inspect}  /// #{options.inspect } /// #{options[:with][field]} /// #{field}",:debug)
 
-      #Remap the options - oddly enough, Spree's product model has master_price and cost_price, while
-      #variant has price and cost_price.
-
-      #options[:with][:price] = options[:with].delete(:price)
-
-      #First, set the primitive fields on the object (prices, etc.)
-
       options[:with].each do |field, value|
         variant.send("#{field}=", value) if variant.respond_to?("#{field}=")
         applicable_option_type = OptionType.where(
@@ -353,11 +318,6 @@ module Spree
 
       if variant.valid?
         variant.save
-
-        # #Associate our new variant with any new taxonomies
-        # ProductImport.settings[:taxonomy_fields].each do |field|
-        #   associate_product_with_taxon(variant.product, field.to_s, options[:with][field.to_sym])
-        # end
 
         #Finally, attach any images that have been specified
         ProductImport.settings[:image_fields_variants].each do |field|
@@ -379,9 +339,8 @@ module Spree
         stock_item = variant.stock_items.where(stock_location_id: source_location.id).first_or_initialize
         log("StockItem: #{stock_item.inspect}",:debug)
         log("OnHand: #{options[:with][:on_hand]}",:debug)
-        #Solo updatamos stock si lo ponemos explicitamente.
+        #We only update the stock if stock is not blank.
         if (options[:with][:on_hand])
-          log("Updating Stock...")
           stock_item.set_count_on_hand(options[:with][:on_hand])
         end
       end
@@ -526,7 +485,8 @@ module Spree
     #      private
     #
     #      def after_product_built(product, params_hash)
-    #        # so something with the product
+    #        super()
+    #        # do something with the product
     #      end
     #    end
     def after_product_built(product, params_hash)
@@ -535,6 +495,7 @@ module Spree
       end
     end
 
+    # TODO: Translate slug
     def add_translations(product, params_hash)
       localeProduct=params_hash[:locale]
       if (localeProduct.nil?) then return end
@@ -545,10 +506,10 @@ module Spree
       #si el producto existe. Por tanto, si estamos traduciendo este campo, lo tendremos
       #en dos columnas del csv. En una con el valor original, i en otra donde pondremos
       #la traducción.
-      if (params_hash.include?(ProductImport.settings[:variant_comparator_field_i18n]) )
-        translations_names.delete(ProductImport.settings[:variant_comparator_field].to_s)
-        #translations_names << ProductImport.settings[:variant_comparator_field_i18n].to_s
-      end
+      # if (params_hash.include?(ProductImport.settings[:variant_comparator_field_i18n]) )
+      #   translations_names.delete(ProductImport.settings[:variant_comparator_field].to_s)
+      #   #translations_names << ProductImport.settings[:variant_comparator_field_i18n].to_s
+      # end
       translation=product.translations.where(locale: localeProduct).first_or_initialize
       params_hash.each do |key,value|
         if translations_names.include?(key.to_s)

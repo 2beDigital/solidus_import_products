@@ -15,18 +15,21 @@ module Spree
         @product_import = Spree::ProductImport.create(product_import_params)
 				@product_import.created_by=spree_current_user.id
 				@product_import.save
-
-        numProds=@product_import.productsCount
-        if numProds > Spree::ProductImport.settings[:num_prods_for_delayed]
-          ImportProductsJob.perform_later(@product_import.id)
-					flash[:notice] = t('product_import_processing')
-        else
-          begin
+        begin
+          numProds=@product_import.productsCount
+          if numProds > Spree::ProductImport.settings[:num_prods_for_delayed]
+            ImportProductsJob.perform_later(@product_import.id)
+					  flash[:notice] = t('product_import_processing')
+          else
             @product_import.import_data!(Spree::ProductImport.settings[:transaction])
-					  flash[:notice] = t('product_import_imported')
-          rescue StandardError => e
-            @product_import.error_message=e.message
-            @product_import.failure
+					  flash[:success] = t('product_import_imported')
+            end
+        rescue StandardError => e
+          @product_import.error_message=e.message
+          @product_import.failure
+          if (e.is_a?(OpenURI::HTTPError))
+            flash[:error] = t('product_import_http_error')
+          else
             flash[:error] = e.message
           end
         end
@@ -36,7 +39,7 @@ module Spree
       def destroy
         @product_import = Spree::ProductImport.find(params[:id])
         if @product_import.destroy
-          flash[:notice] = t('delete_product_import_successful')
+          flash[:success] = t('delete_product_import_successful')
         end
         redirect_to admin_product_imports_path
       end

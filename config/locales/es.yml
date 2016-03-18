@@ -6,6 +6,7 @@ es:
   back_to_product_imports: "Volver a Importar Productos"
   delete_product_import_successful: "La importación y los productos asociados se han borrado"
   confirm_delete_product_import: "Al borrar esta importación, se borrarán todos los productos asociados. Está usted seguro?"
+  product_import_http_error: "Error al subir el fichero"
   product_import:
     state:
       created: "Creado"
