@@ -237,9 +237,18 @@ module Spree
 
       after_product_built(product, params_hash)
 
+
       #Save the object before creating asssociated objects
       product.save and product_ids << product.id
       log("Saved object before creating associated objects for: #{product.name}")
+
+      #In creates, slug is assigned automatically, and is not assigned to the csv value.
+      #So we have to do this assginment manually.
+      if (product.slug!=params_hash[:slug])
+        product.slug=params_hash[:slug]
+        product.save
+      end
+
 
       variant=create_variant_for(product, :with => params_hash)
 
