@@ -15,7 +15,7 @@ es:
       failed: "Error"
   form:
     product_import:
-      separator_char: "Caràcter separador"
+      separator_char: "Carácter separador"
       heading: "Importar Productos desde CSV"
       new:
         data_file: "Fichero de productos"
