@@ -27,7 +27,7 @@ Spree::ProductImport.settings = {
     },
     :num_prods_for_delayed => 20, #From this number of products, the process is executed in delayed_job. Under it is processed immediately.
     :create_missing_taxonomies => true,
-    :taxonomy_fields => [:taxons], #Fields that should automatically be parsed for taxons to associate
+    :taxonomy_fields => [:taxonomies], #Fields that should automatically be parsed for taxons to associate
     :image_fields_products => [:image_product, :image_product_2, :image_product_3, :image_product_4], #Image fields that should be parsed for image locations of products
     :image_fields_variants => [:image_variant, :image_variant_2, :image_variant_3, :image_variant_4], #Image fields that should be parsed for image locations of variants
     :image_text_products => :alt_product, #Field that contains alt text for images of product.
