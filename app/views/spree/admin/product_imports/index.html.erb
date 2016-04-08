@@ -7,12 +7,14 @@
 <%= form_for([:admin, @product_import], :method => :post, :html => { :multipart => true }) do |f| %>
   <fieldset class="no-border-top">
   <%= f.field_container :data_file, class: ['form-group'] do  %>
-    <%= f.label :data_file, t('form.product_import.new.data_file') %>
+    <%= f.label :data_file, t('form.product_import.new.data_file') %><br />
     <%= f.file_field :data_file %>
     <%= f.error_message_on :data_file %>
   <% end %>
-	<%= f.label :separatorChar, t('form.product_import.separatorChar') %>
-	<%= f.text_field :separatorChar, class: 'form-control required',:id =>  "separatorChar",:value => ";" ,:size => 1, :maxlength => 1 %>
+  <div class="field">
+    <%= f.label :separatorChar, t('form.product_import.separator_char') %><br />
+    <%= f.text_field :separatorChar, class: 'form-control required',:id =>  "separatorChar",:value => ";" ,:size => 1, :maxlength => 1 %>
+  </div>
   <div data-hook="buttons" class="form-actions">
     <%= button Spree.t('actions.create'), 'ok', 'submit', {class: 'btn-success'} %>
   </div>
