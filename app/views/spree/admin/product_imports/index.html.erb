@@ -11,14 +11,16 @@
     <%= f.file_field :data_file %>
     <%= f.error_message_on :data_file %>
   <% end %>
+	<%= f.label :separatorChar, t('form.product_import.separatorChar') %>
+	<%= f.text_field :separatorChar, class: 'form-control required',:id =>  "separatorChar",:value => ";" ,:size => 1, :maxlength => 1 %>
   <div data-hook="buttons" class="form-actions">
     <%= button Spree.t('actions.create'), 'ok', 'submit', {class: 'btn-success'} %>
   </div>
   </fieldset>
+
 <% end %>
 </div>
 </div>
-
 <table class="table">
   <colgroup>
     <col style="width: 15%">

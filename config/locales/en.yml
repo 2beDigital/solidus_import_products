@@ -15,6 +15,7 @@ en:
       failed: "Failed"
   form:
     product_import:
+      separator_char: "Column separator character"
       heading: "Import Products from CSV"
       new:
         data_file: "Product Data File"

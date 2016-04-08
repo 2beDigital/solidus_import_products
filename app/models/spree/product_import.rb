@@ -9,6 +9,8 @@ module Spree
   class SkuError < StandardError; end;
 
   class ProductImport < ActiveRecord::Base
+    attr_accessor :separatorChar
+    attr_accessor :quoteChar
     has_attached_file :data_file, :path => "/product_data/data-files/:basename_:timestamp.:extension"
     validates_attachment_presence :data_file
     #Content type of csv vary in different browsers.
@@ -56,7 +58,8 @@ module Spree
     end
     #Return the number of rows in CSV.
     def productsCount
-      rows = CSV.parse(open(self.data_file.url).read)
+      rows = CSV.parse(open(self.data_file.url).read, :col_sep => separatorChar)
+			#rows = CSV.parse(open(self.data_file.url).read, :col_sep => ",", :quote_char => "'")
       return rows.count
     end
 
@@ -98,7 +101,7 @@ module Spree
         @products_before_import = Spree::Product.all
         @skus_of_products_before_import = @products_before_import.map(&:sku)
 
-        rows = CSV.parse(open(self.data_file.url).read)
+        rows = CSV.parse(open(self.data_file.url).read, :col_sep => separatorChar)
 
         if ProductImport.settings[:first_row_is_headings]
           col = get_column_mappings(rows[0])
@@ -312,14 +315,17 @@ module Spree
 
       options[:with].each do |field, value|
         variant.send("#{field}=", value) if variant.respond_to?("#{field}=")
-        applicable_option_type = OptionType.where(
-            "lower(presentation) = ? OR lower(name) = ?",
-            field.to_s, field.to_s).first
-        if applicable_option_type.is_a?(OptionType)
-          product.option_types << applicable_option_type unless product.option_types.include?(applicable_option_type)
-          opt_value = applicable_option_type.option_values.where(["presentation = ? OR name = ?", value, value]).first
-          opt_value = applicable_option_type.option_values.create(:presentation => value, :name => value) unless opt_value
-          variant.option_values << opt_value unless variant.option_values.include?(opt_value)
+        #We only applu OptionTypes if value is not null.
+        if (value)
+          applicable_option_type = OptionType.where(
+              "lower(presentation) = ? OR lower(name) = ?",
+              field.to_s, field.to_s).first
+          if applicable_option_type.is_a?(OptionType)
+            product.option_types << applicable_option_type unless product.option_types.include?(applicable_option_type)
+            opt_value = applicable_option_type.option_values.where(["presentation = ? OR name = ?", value, value]).first
+            opt_value = applicable_option_type.option_values.create(:presentation => value, :name => value) unless opt_value
+            variant.option_values << opt_value unless variant.option_values.include?(opt_value)
+          end
         end
       end
 
