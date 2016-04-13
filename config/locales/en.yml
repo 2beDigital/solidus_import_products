@@ -17,5 +17,6 @@ en:
     product_import:
       separator_char: "Column separator character"
       heading: "Import Products from CSV"
+      encoding: "Encoding"
       new:
         data_file: "Product Data File"

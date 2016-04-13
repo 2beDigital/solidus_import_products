@@ -17,5 +17,6 @@ es:
     product_import:
       separator_char: "Carácter separador"
       heading: "Importar Productos desde CSV"
+      encoding: "Codificación"
       new:
         data_file: "Fichero de productos"

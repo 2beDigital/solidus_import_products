@@ -15,8 +15,14 @@
     <%= f.label :separatorChar, t('form.product_import.separator_char') %><br />
     <%= f.text_field :separatorChar, class: 'form-control required',:id =>  "separatorChar",:value => ";" ,:size => 1, :maxlength => 1 %>
   </div>
+  <div class="field">
+    <%= f.label :encoding_csv, t('form.product_import.encoding') %><br />
+    <%= f.select(:encoding_csv,
+                   options_from_collection_for_select(Spree::ProductImport::ENCODINGS, :to_s, :to_s, 'UTF-8'),
+                   {:class => 'select2', :prompt => false}) %>
+  </div>
   <div data-hook="buttons" class="form-actions">
-    <%= button Spree.t('actions.create'), 'ok', 'submit', {class: 'btn-success'} %>
+    <%= button Spree.t('actions.import'), 'ok', 'submit', {class: 'btn-success'} %>
   </div>
   </fieldset>
 
