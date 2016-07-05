@@ -3,10 +3,10 @@ es:
   product_import_imported: "Productos importados correctamente"
   product_imports: "Importar Productos"
   delete_product_import: "Borrar"
-  back_to_product_imports: "Volver a Importar Productos"
+  back_to_product_imports: "Volver al listado"
   delete_product_import_successful: "La importación y los productos asociados se han borrado"
   confirm_delete_product_import: "Al borrar esta importación, se borrarán todos los productos asociados. Está usted seguro?"
-  product_import_http_error: "Error al subir el fichero"
+  product_import_http_error: "Error al subir el fichero. Asegurese que el fichero está grabado como texto."
   product_import:
     state:
       created: "Creado"
