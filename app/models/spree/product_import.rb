@@ -359,6 +359,11 @@ module Spree
         log("StockItem: #{stock_item.inspect}",:debug)
         log("OnHand: #{options[:with][:on_hand]}",:debug)
         #We only update the stock if stock is not blank.
+				if (options[:with][:backorderable])
+				  if stock_item.respond_to?("backorderable=")
+						stock_item.send("backorderable=", options[:with][:backorderable])
+					end
+        end
         if (options[:with][:on_hand])
           stock_item.set_count_on_hand(options[:with][:on_hand])
         end
