@@ -1,4 +1,4 @@
-module SpreeImportProducts
+module SolidusImportProducts
   class Engine < Rails::Engine
 		engine_name 'import_products'
 
@@ -13,7 +13,7 @@ module SpreeImportProducts
         Rails.application.config.cache_classes ? require(c) : load(c)
       end
 
-      Spree::UserMailer.send(:include, SpreeImportProducts::UserMailerExt)
+      Spree::UserMailer.send(:include, SolidusImportProducts::UserMailerExt)
 
     end
 

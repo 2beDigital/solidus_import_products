@@ -141,7 +141,8 @@ module Spree
           variant_comparator_column = col[variant_comparator_field]
 
           if ProductImport.settings[:create_variants] and variant_comparator_column and
-              p = Product.where(Product.table_name+'.'+variant_comparator_field.to_s => row[variant_comparator_column]).only(:product,:where).first
+              p = Product.with_translations.where(variant_comparator_field.to_s => row[variant_comparator_column]).first
+            #only(:product,:where)
             # Product exists
             p.update_attribute(:deleted_at, nil) if p.deleted_at #Un-delete product if it is there
             p.variants.each { |variant| variant.update_attribute(:deleted_at, nil) }

@@ -1,11 +1,11 @@
-Spree Import Products
+Solidus Import Products
 ==============
 
-This extension adds product import functionality to Spree, with a bunch of features that give it similar functionality to Shopify's importer.
+This extension adds product import functionality to Solidus, with a bunch of features that give it similar functionality to Shopify's importer.
 
 It's been built to be as simple as possible while still doing it's job, and almost the entire workflow of the script beyond creating products from a CSV file is configurable.
 
-This extension adds a tab to the administration area of Spree, allowing a logged-in user to select and upload a CSV file containing product information. The upload is then placed on queue for processing. Once it has been processed, the user who initiated the job is notified by email that their import has completed.
+This extension adds a tab to the administration area of Solidus, allowing a logged-in user to select and upload a CSV file containing product information. The upload is then placed on queue for processing. Once it has been processed, the user who initiated the job is notified by email that their import has completed.
 
 
 FEATURES
@@ -68,9 +68,9 @@ rails generate import_products:install
 INSTALLATION
 ==============
 1. Add the gem to your Gemfile, and run bundle install.
-    `gem 'import_products', :git => 'git://github.com/2BeDigital/spree-import-products.git'` then `bundle install`
+    `gem 'import_products', :git => 'git://github.com/2BeDigital/solidus-import-products.git'` then `bundle install`
 
-2. rails generate spree_import_products:install
+2. rails generate solidus_import_products:install
 
 3. Configure the extension to suit your application by changing config variables in `config/initializers/import_product_settings.rb`
 

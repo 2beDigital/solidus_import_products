@@ -1,4 +1,4 @@
-module SpreeImportProducts
+module SolidusImportProducts
   module Generators
     class InstallGenerator < Rails::Generators::Base
       def self.source_paths
@@ -10,11 +10,11 @@ module SpreeImportProducts
       end
 
       def add_migrations
-        run 'bundle exec rake railties:install:migrations FROM=spree_import_products'
+        run 'bundle exec rake railties:install:migrations FROM=solidus_import_products'
       end
 
       def add_files
-        template 'config/initializers/spree_import_product_settings.rb', 'config/initializers/spree_import_product_settings.rb'
+        template 'config/initializers/solidus_import_product_settings.rb', 'config/initializers/solidus_import_product_settings.rb'
 				template 'scripts/delayed_job', 'scripts/delayed_job'
       end
 

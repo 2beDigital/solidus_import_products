@@ -9,7 +9,7 @@ RSpec::Core::RakeTask.new
 
 task :default => [:spec]
 
-spec = eval(File.read('spree_import_products.gemspec'))
+spec = eval(File.read('solidus_import_products.gemspec'))
 
 Gem::PackageTask.new(spec) do |p|
   p.gem_spec = spec

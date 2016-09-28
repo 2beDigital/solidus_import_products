@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-module Spree
+module Solidus
   describe ProductImport do
     describe "#create_variant_for" do
       before do

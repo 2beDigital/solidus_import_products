@@ -1,6 +1,6 @@
-module Spree
+module Solidus
   module UrlHelpers
-    def spree
+    def solidus
       Spree::Core::Engine.routes.url_helpers
     end
   end
