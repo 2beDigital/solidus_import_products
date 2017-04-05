@@ -127,9 +127,6 @@ module Spree
           #Manually set available_on if it is not already set
           product_information[:available_on] = Date.today - 1.day if product_information[:available_on].nil?
 
-          #Manually set retail_only if it is not already set
-          product_information[:retail_only] = 0 if product_information[:retail_only].nil?
-
           if (product_information[:shipping_category_id].nil?)
             sc = Spree::ShippingCategory.first
             product_information[:shipping_category_id] = sc.id unless sc.nil?
@@ -184,6 +181,9 @@ module Spree
           :variant_comparator_field
       ).flatten.map(&:to_s)
 
+			#Manually set retail_only if it is not already set
+			product_information[:retail_only] = 0 if product_information[:retail_only].nil?
+					
       params_hash.each do |field, value|
         if product.respond_to?("#{field}=")
           product.send("#{field}=", value)
