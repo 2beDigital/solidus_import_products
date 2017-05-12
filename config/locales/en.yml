@@ -7,6 +7,12 @@ en:
   delete_product_import_successful: "Import and products associated deleted successfully"
   confirm_delete_product_import: "Deleting this import will delete all the product associated, are you sure ?"
   product_import_http_error: "Error uploading file. Make sure the file is saved as text."
+  spree:
+    admin:
+      tab:
+        product_imports: "Import Products"
+    actions:
+      import: "Import"
   product_import:
     state:
       created: "Created"

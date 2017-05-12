@@ -7,6 +7,12 @@ es:
   delete_product_import_successful: "La importación y los productos asociados se han borrado"
   confirm_delete_product_import: "Al borrar esta importación, se borrarán todos los productos asociados. Está usted seguro?"
   product_import_http_error: "Error al subir el fichero. Asegurese que el fichero está grabado como texto."
+  spree:
+    admin:
+      tab:
+        product_imports: "Importar Productos"
+    actions:
+      import: "Importar"
   product_import:
     state:
       created: "Creado"

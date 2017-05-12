@@ -1,4 +1,5 @@
 class ImportProductsJob < ActiveJob::Base
+	include SuckerPunch::Job
   queue_as :default
 
 	after_perform :notify_admin
@@ -7,7 +8,7 @@ class ImportProductsJob < ActiveJob::Base
     Rails.logger.error("[ActiveJob] [#{self.class}] [#{job_id}] ID: #{@product_id} #{exception}")
 		products=Spree::ProductImport.find(@product_id)
 		user=Spree::User.find(products.created_by)
-    Spree::UserMailer.product_import_results(user, exception.message+" "+exception.backtrace.join("\n")).deliver
+    Spree::UserMailer.product_import_results(user, exception.message+" "+exception.backtrace.join("\n")).deliver_later
     #Hacemos aquí el update para que aunque falle, enviemos el mail igualmente
     products.error_message=exception.message
     products.failure
@@ -22,8 +23,8 @@ class ImportProductsJob < ActiveJob::Base
   def notify_admin
 		products=Spree::ProductImport.find(@product_id)
 		user=Spree::User.find(products.created_by)
-		#log("USER: #{user.email}")
-    Spree::UserMailer.product_import_results(user).deliver
+		log("USER: #{user.email}")
+    Spree::UserMailer.product_import_results(user).deliver_later
   end
   private
   def log(message, severity = :info)

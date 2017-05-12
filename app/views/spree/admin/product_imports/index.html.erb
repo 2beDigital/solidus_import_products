@@ -55,7 +55,7 @@
     <tr class="<%= cycle('odd', 'even') %>" id="<%= dom_id import %>">
       <td><%= I18n.l(import.created_at.to_datetime,format: :short)%></td>
       <td><%= link_to import.data_file_file_name, import.data_file.url -%></td>
-      <td><span class="label label-<%= import.state.downcase %>"><%= t(import.state, :scope => "product_import.state") -%></span></td>
+      <td><span class="label label-<%= import.state.downcase %>"><%= t(import.state, :scope => "product_import.state")%></span></td>
       <td><%= I18n.l(import.state_datetime.to_datetime,format: :short) %></td>
       <td><%= import.product_ids.size -%></td>
       <td><%= import.error_message%></td>

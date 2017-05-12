@@ -18,7 +18,7 @@ module Spree
         begin
           numProds=@product_import.productsCount
           if numProds > Spree::ProductImport.settings[:num_prods_for_delayed]
-            ImportProductsJob.perform_later(@product_import.id)
+						ImportProductsJob.perform_later(@product_import.id)
 					  flash[:notice] = t('product_import_processing')
           else
             @product_import.import_data!(Spree::ProductImport.settings[:transaction])
