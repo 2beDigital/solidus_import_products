@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.name        = 'solidus_import_products'
-  s.version     = '1.0.2'
+  s.version     = '1.0.3'
   s.summary     = "solidus_import_products ... imports products. From a CSV file via Solidus's Admin interface"
   #s.description = 'Add (optional) gem description here'
   s.required_ruby_version = '>= 2.2.2'
@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.requirements << 'none'
 
 
-  s.add_dependency 'solidus_core', '>= 1.4'
+  s.add_dependency 'solidus_core', '>= 2.0'
   s.add_dependency 'solidus_auth_devise'
 
   s.add_development_dependency 'capybara', '2.4.4'
