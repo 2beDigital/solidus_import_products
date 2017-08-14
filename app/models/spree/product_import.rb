@@ -332,13 +332,11 @@ module Spree
           variant.send("#{field}=", value) if variant.respond_to?("#{field}=")
         end
         #We only apply OptionTypes if value is not null.
-        if (value)
-          applicable_option_type = OptionType.where(
-              "lower(presentation) = ? OR lower(name) = ?",
-              field.to_s, field.to_s).first
+        if (value && !(field.to_s =~ /^(sku|slug|name|description|price|on_hand|taxonomies|image_product|alt_product|available_on|shipping_category_id).*$/))
+          applicable_option_type = OptionType.where(name: field.to_s).or(OptionType.where(presentation: field.to_s)).first
           if applicable_option_type.is_a?(OptionType)
             product.option_types << applicable_option_type unless product.option_types.include?(applicable_option_type)
-            opt_value = applicable_option_type.option_values.where(["presentation = ? OR name = ?", value, value]).first
+            opt_value = applicable_option_type.option_values.where(presentation: value).or(applicable_option_type.option_values.where(name:value)).first
             opt_value = applicable_option_type.option_values.create(:presentation => value, :name => value) unless opt_value
             variant.option_values << opt_value unless variant.option_values.include?(opt_value)
           end
@@ -349,7 +347,6 @@ module Spree
 
       if variant.valid?
         variant.save
-
         #Finally, attach any images that have been specified
         ProductImport.settings[:image_fields_variants].each do |field|
           find_and_attach_image_to(variant, options[:with][field.to_sym], options[:with][ProductImport.settings[:image_text_variants].to_sym])
