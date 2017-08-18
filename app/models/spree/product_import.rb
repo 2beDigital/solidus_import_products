@@ -497,20 +497,37 @@ module Spree
         hierarchy = hierarchy.split(/\s*>\s*/)
         taxonomy = Spree::Taxonomy.with_translations.where("lower(spree_taxonomy_translations.name) = ?", hierarchy.first.downcase).first
         taxonomy = Taxonomy.create(:name => hierarchy.first.capitalize) if taxonomy.nil? && ProductImport.settings[:create_missing_taxonomies]
+        #Check if the Taxonomy is valid
+        unless taxonomy.valid?
+          log(msg = "A product could not be imported - here is the information we have:\n" +
+              "Product: #{product.inspect}, Taxonomy: #{taxon_hierarchy}, Errors: #{taxonomy.errors.full_messages.join(', ')} \n",:error)
+          raise ProductError, msg
+        end
+
         last_taxon = taxonomy.root
 
         hierarchy.shift
         hierarchy.each do |taxon|
           #last_taxon = last_taxon.children.find_or_create_by_name_and_taxonomy_id(taxon, taxonomy.id)
           last_taxon = last_taxon.children.find_or_create_by(name: taxon, taxonomy_id: taxonomy.id)
+          #Check if the Taxonomy is valid
+          unless last_taxon.valid?
+            log(msg = "A product could not be imported - here is the information we have:\n" +
+                "Product: #{product.inspect}, Taxonomy: #{taxonomy.inspect}, Taxon: #{last_taxon.inspect}, #{last_taxon.errors.full_messages.join(', ')}",:error)
+            raise ProductError, msg
+          end
         end
-
         #Spree only needs to know the most detailed taxonomy item
         product.taxons << last_taxon unless product.taxons.include?(last_taxon)
       end
-      if (putInTop and defined?(SpreeSortProductsTaxbundleon))
-        if(SpreeSortProductsTaxon::Config.activated)
-          product.put_in_taxons_top(product.taxons)
+      
+      if (putInTop and defined?(SolidusSortProductsTaxon))
+        if(SolidusSortProductsTaxon::Config.activated)
+          unless product.put_in_taxons_top(product.taxons)
+            log(msg = "A product could not be imported - here is the information we have:\n" +
+                "Product: #{product.inspect}, Taxons: #{product.taxons}, #{product.errors.full_messages.join(', ')}",:error)
+            raise ProductError, msg
+          end
         end
       end
     end
