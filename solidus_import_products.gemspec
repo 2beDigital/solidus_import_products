@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'solidus_core', '>= 2.0'
   s.add_dependency 'solidus_auth_devise'
+  s.add_dependency 'solidus_support'
 
   s.add_development_dependency 'capybara', '2.4.4'
   s.add_development_dependency 'factory_girl', '~> 4.4'
