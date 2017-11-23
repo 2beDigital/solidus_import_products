@@ -15,7 +15,6 @@ module SolidusImportProducts
 
       def add_files
         template 'config/initializers/solidus_import_product_settings.rb', 'config/initializers/solidus_import_product_settings.rb'
-				template 'scripts/delayed_job', 'scripts/delayed_job'
       end
 
       def run_migrations

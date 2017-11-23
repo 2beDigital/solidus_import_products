@@ -13,8 +13,6 @@ Dir[File.join(File.dirname(__FILE__), "support/**/*.rb")].each {|f| require f }
 # Requires factories defined in spree_core
 require 'spree/testing_support/factories'
 
-Delayed::Worker.delay_jobs = false
-
 RSpec.configure do |config|
   # == Mock Framework
   #
