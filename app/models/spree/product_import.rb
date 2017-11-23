@@ -592,9 +592,15 @@ module Spree
       end
       translation.save
     end
+
+    def fail_and_error(msg)
+      failure
+      raise ImportError, msg
+    end
     #Special process of prices because of locales and different decimal separator characters.
     #We want to get a format with dot as decimal separator and without thousand separator
     def convertToPrice(priceStr)
+      fail_and_error('invalid price') unless priceStr
       punt=priceStr.index('.')
       coma=priceStr.index(',')
       #If the string contains dot and commas, we process it. If not, we replace comma by dot.
