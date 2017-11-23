@@ -44,7 +44,7 @@ module Solidus
       it "should not duplicate option_values for existing variant" do
         expect do
           described_class.new.send(:create_variant_for, product, :with => params.merge(:"tshirt-size" => "Large", :"tshirt-color" => "Yellow"))
-          ProductImport.new.send(:create_variant_for, product, :with => params.merge(:"tshirt-size" => "Large", :"tshirt-color" => "Yellow"))
+          described_class.new.send(:create_variant_for, product, :with => params.merge(:"tshirt-size" => "Large", :"tshirt-color" => "Yellow"))
         end.to change(product.variants, :count).by(1)
         variant = product.variants.last
         product.option_types.should =~ [size, color]
@@ -60,18 +60,14 @@ module Solidus
     end
 
     describe "#import_data!" do
-      let(:valid_import) {
-        described_class.create(
-          data_file: File.new(File.join(File.dirname(__FILE__), '..', 'fixtures', 'valid.csv')),
-          separatorChar: ','
-        )
-      }
-      let(:invalid_import) { described_class.create :data_file => File.new(File.join(File.dirname(__FILE__), '..', 'fixtures', 'invalid.csv')) }
+      let(:valid_import) { create_import('valid.csv') }
+      let(:invalid_import) { create_import('invalid.csv') }
 
       context "on valid csv" do
         it "create products successfully" do
+          described_class.settings[:variant_comparator_field] = :name
           expect { valid_import.import_data! }.to change(Spree::Product, :count).by(1)
-          Product.last.variants.count.should == 2
+          Spree::Product.last.variants.count.should == 2
         end
 
         it "tracks product created ids" do
@@ -83,9 +79,12 @@ module Solidus
 
         it "handles product properties" do
           Spree::Property.create :name => "brand", :presentation => "Brand"
+          import = create_import('products_with_properties.csv')
+
           expect {
-            @import = Spree::ProductImport.create(:data_file => File.new(File.join(File.dirname(__FILE__), '..', 'fixtures', 'products_with_properties.csv'))).import_data!(true)
+            import.import_data!(true)
           }.to change(Spree::Product, :count).by(1)
+
           (product = Spree::Product.last).product_properties.map(&:value).should == ["Rails"]
           product.variants.count.should == 2
         end
@@ -132,9 +131,11 @@ module Solidus
 
     describe "#destroy_products" do
       it "should also destroy associations" do
-        expect { (@import = described_class.create(:data_file => File.new(File.join(File.dirname(__FILE__), '..', 'fixtures', 'products_with_properties.csv')))).import_data!(true)
+        import = create_import('products_with_properties.csv')
+        expect {
+          import.import_data!(true)
         }.to change(Spree::Product, :count).by(1)
-        @import.destroy
+        import.destroy
         Spree::Variant.count.should == 0
       end
     end
