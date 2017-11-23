@@ -26,7 +26,7 @@ module Solidus
         expect do
           described_class.new.send(:create_variant_for, product, :with => params)
         end.to change(product.variants, :count).by(1)
-        product.variants_including_master.count.should == 1
+        product.variants.count.should == 1
         variant = product.variants.last
         variant.price.to_f.should == 54.46
         variant.cost_price.to_f.should == 29.25
@@ -38,7 +38,7 @@ module Solidus
         described_class.new.send(:create_variant_for, product, :with => params.merge(:"tshirt-size" => "Large", :"tshirt-color" => "Yellow"))
         variant = product.variants.last
         product.option_types.should =~ [size, color]
-        variant.option_values.should =~ OptionValue.where(:name => %w(Large Yellow))
+        variant.option_values.should =~ Spree::OptionValue.where(:name => %w(Large Yellow))
       end
 
       it "should not duplicate option_values for existing variant" do
@@ -48,7 +48,7 @@ module Solidus
         end.to change(product.variants, :count).by(1)
         variant = product.variants.last
         product.option_types.should =~ [size, color]
-        variant.option_values.reload.should =~ OptionValue.where(:name => %w(Large Yellow))
+        variant.option_values.reload.should =~ Spree::OptionValue.where(:name => %w(Large Yellow))
       end
 
       it "throws an exception when variant with sku exist for another product" do
