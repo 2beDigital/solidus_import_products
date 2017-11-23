@@ -142,7 +142,7 @@ module Spree
 
           if ProductImport.settings[:create_variants] and variant_comparator_column and
               #p = Product.with_translations().where(Product.table_name+'.'+variant_comparator_field.to_s => row[variant_comparator_column]).first #only(:product,:where)
-              p = Product.with_translations().where(variant_comparator_field.to_s => row[variant_comparator_column]).first #only(:product,:where)
+              p = Product.where(variant_comparator_field.to_s => row[variant_comparator_column]).first #only(:product,:where)
             # Product exists
             p.update_attribute(:deleted_at, nil) if p.deleted_at #Un-delete product if it is there
             p.variants.each { |variant| variant.update_attribute(:deleted_at, nil) }
@@ -197,7 +197,15 @@ module Spree
         end
       end
 
+      setup_shipping_category(product) unless product.shipping_category
       save_product(product,params_hash,properties_hash,true)
+    end
+
+    def setup_shipping_category(product)
+      unless Spree::ShippingCategory.first
+        Spree::ShippingCategory.find_or_create_by(name: "Default")
+      end
+      product.shipping_category = Spree::ShippingCategory.first
     end
 
     def update_product(product,params_hash)
