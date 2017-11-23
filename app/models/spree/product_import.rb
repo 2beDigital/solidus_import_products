@@ -12,7 +12,9 @@ module Spree
 
     ENCODINGS= %w(UTF-8 iso-8859-1)
 
-    has_attached_file :data_file, :path => "/product_data/data-files/:basename_:timestamp.:extension"
+    has_attached_file :data_file,
+      path: ":rails_root/tmp/product_data/data-files/:basename_:timestamp.:extension",
+      url: ":rails_root/tmp/product_data/data-files/:basename_:timestamp.:extension"
     validates_attachment_presence :data_file
     #Content type of csv vary in different browsers.
     validates_attachment :data_file, :presence => true, content_type: { content_type: ["text/csv", "text/plain", "text/comma-separated-values", "application/octet-stream", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"] }
@@ -99,9 +101,10 @@ module Spree
     def _import_data
       begin
         log("import data start",:debug)
-        @products_before_import = Spree::Product.with_translations().all
+        @products_before_import = Spree::Product.all
         @skus_of_products_before_import = @products_before_import.map(&:sku)
-        csv_string=open(self.data_file.url,"r:#{encoding_csv}").read.encode('utf-8')
+        file_attached =  self.data_file.url(:default, timestamp: false)
+        csv_string = open(file_attached, "r:#{encoding_csv}").read.encode('utf-8')
         rows = CSV.parse(csv_string, :col_sep => separatorChar)
 
         if ProductImport.settings[:first_row_is_headings]
