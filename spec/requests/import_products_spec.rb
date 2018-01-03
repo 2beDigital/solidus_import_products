@@ -2,7 +2,7 @@ require 'spec_helper'
 
 feature "Import products" do
   background do
-    sign_in_as! Factory(:admin_user)
+    sign_in_as! create(:admin_user)
   end
 
   scenario "admin should be able to import products and delete import" do
@@ -12,8 +12,6 @@ feature "Import products" do
 
     page.should have_content("valid.csv")
     page.should have_content("Created")
-
-    Delayed::Worker.new.work_off
 
     # should have created the product
     visit spree.admin_products_path

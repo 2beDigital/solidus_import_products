@@ -11,9 +11,7 @@ require 'ffaker'
 Dir[File.join(File.dirname(__FILE__), "support/**/*.rb")].each {|f| require f }
 
 # Requires factories defined in spree_core
-require 'spree/core/testing_support/factories'
-
-Delayed::Worker.delay_jobs = false
+require 'spree/testing_support/factories'
 
 RSpec.configure do |config|
   # == Mock Framework
@@ -33,4 +31,6 @@ RSpec.configure do |config|
   # instead of true.
   config.use_transactional_fixtures = true
   config.include Solidus::UrlHelpers
+  config.include FactoryBot::Syntax::Methods
+  config.include ProductImportHelpers
 end
