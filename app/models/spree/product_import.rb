@@ -12,7 +12,9 @@ module Spree
 
     ENCODINGS= %w(UTF-8 iso-8859-1)
 
-    has_attached_file :data_file, :path => "/product_data/data-files/:basename_:timestamp.:extension"
+    has_attached_file :data_file,
+      path: ":rails_root/tmp/product_data/data-files/:basename_:timestamp.:extension",
+      url: ":rails_root/tmp/product_data/data-files/:basename_:timestamp.:extension"
     validates_attachment_presence :data_file
     #Content type of csv vary in different browsers.
     validates_attachment :data_file, :presence => true, content_type: { content_type: ["text/csv", "text/plain", "text/comma-separated-values", "application/octet-stream", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"] }
@@ -59,7 +61,8 @@ module Spree
     end
     #Return the number of rows in CSV.
     def productsCount
-      rows = CSV.parse(open(self.data_file.url).read, :col_sep => separatorChar)
+      file_attached =  self.data_file.url(:default, timestamp: false)
+      rows = CSV.parse(open(file_attached).read, :col_sep => separatorChar)
 			#rows = CSV.parse(open(self.data_file.url).read, :col_sep => ",", :quote_char => "'")
       return rows.count
     end
@@ -99,9 +102,10 @@ module Spree
     def _import_data
       begin
         log("import data start",:debug)
-        @products_before_import = Spree::Product.with_translations().all
+        @products_before_import = Spree::Product.all
         @skus_of_products_before_import = @products_before_import.map(&:sku)
-        csv_string=open(self.data_file.url,"r:#{encoding_csv}").read.encode('utf-8')
+        file_attached =  self.data_file.url(:default, timestamp: false)
+        csv_string = open(file_attached, "r:#{encoding_csv}").read.encode('utf-8')
         rows = CSV.parse(csv_string, :col_sep => separatorChar)
 
         if ProductImport.settings[:first_row_is_headings]
@@ -139,7 +143,7 @@ module Spree
 
           if ProductImport.settings[:create_variants] and variant_comparator_column and
               #p = Product.with_translations().where(Product.table_name+'.'+variant_comparator_field.to_s => row[variant_comparator_column]).first #only(:product,:where)
-              p = Product.with_translations().where(variant_comparator_field.to_s => row[variant_comparator_column]).first #only(:product,:where)
+              p = Product.where(variant_comparator_field.to_s => row[variant_comparator_column]).first #only(:product,:where)
             # Product exists
             p.update_attribute(:deleted_at, nil) if p.deleted_at #Un-delete product if it is there
             p.variants.each { |variant| variant.update_attribute(:deleted_at, nil) }
@@ -194,7 +198,15 @@ module Spree
         end
       end
 
+      setup_shipping_category(product) unless product.shipping_category
       save_product(product,params_hash,properties_hash,true)
+    end
+
+    def setup_shipping_category(product)
+      unless Spree::ShippingCategory.first
+        Spree::ShippingCategory.find_or_create_by(name: "Default")
+      end
+      product.shipping_category = Spree::ShippingCategory.first
     end
 
     def update_product(product,params_hash)
@@ -580,9 +592,15 @@ module Spree
       end
       translation.save
     end
+
+    def fail_and_error(msg)
+      failure
+      raise ImportError, msg
+    end
     #Special process of prices because of locales and different decimal separator characters.
     #We want to get a format with dot as decimal separator and without thousand separator
     def convertToPrice(priceStr)
+      fail_and_error('invalid price') unless priceStr
       punt=priceStr.index('.')
       coma=priceStr.index(',')
       #If the string contains dot and commas, we process it. If not, we replace comma by dot.

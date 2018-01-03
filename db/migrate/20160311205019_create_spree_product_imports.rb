@@ -1,4 +1,4 @@
-class CreateSpreeProductImports < ActiveRecord::Migration
+class CreateSpreeProductImports < SolidusSupport::Migration[4.2]
   def self.up
     create_table :spree_product_imports do |t|
       t.string :data_file_file_name
