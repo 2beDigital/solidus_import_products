@@ -15,7 +15,7 @@ module Solidus
 
       let(:params) do
         {:sku=>"002", :name=>"S0388G Bloch Kids Tap Flexww", :description=>"Lace Up Split Sole Leather Tap Shoe",
-          :cost_price=>"29.25", :master_price=>"54.46", :available_on=>"1/1/10", :"tshirt-color"=>"Blue", :"tshirt-size"=>"Small",
+          :cost_price=>"29.25", :price=>"54.46", :available_on=>"1/1/10", :"tshirt-color"=>"Blue", :"tshirt-size"=>"Small",
           :on_hand=>"2", :height=>"3", :width=>"4", :depth=>"9", :weight=>"1", :position=>"0", :category=>"Categories >
           Clothing", :slug=>"S0388G-bloch-kids-tap-flexewe"
         }
@@ -73,7 +73,7 @@ module Solidus
         it "tracks product created ids" do
           valid_import.import_data!
           valid_import.reload
-          valid_import.product_ids.should == [Spree::Product.last.id]
+          expect(valid_import.product_ids).to eq [Spree::Product.last.id]
           valid_import.products.should == [Spree::Product.last]
         end
 

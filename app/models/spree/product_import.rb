@@ -97,6 +97,9 @@ module Spree
       else
         _import_data
       end
+    rescue ImportError => e
+      failure!
+      raise e
     end
 
     def _import_data
@@ -179,7 +182,7 @@ module Spree
 
 			#2BeDigital: Manually set retail_only if it is not already set
 			params_hash[:retail_only] = 0 if params_hash[:retail_only].nil?
-					
+
       # Array of special fields. Prevent adding them to properties.
       special_fields  = ProductImport.settings.values_at(
           :image_fields,
@@ -214,11 +217,11 @@ module Spree
       log("UPATE PRODUCT:"+params_hash.inspect)
       properties_hash = Hash.new
 
-			#2BeDigital: If exists retail_only key without value, we assign false, to avoid null values.
-			if (params_hash.key?(:retail_only) and params_hash[:retail_only].nil?) 
-				params_hash[:retail_only] = 0
-			end
-			
+      #2BeDigital: If exists retail_only key without value, we assign false, to avoid null values.
+      if (params_hash.key?(:retail_only) and params_hash[:retail_only].nil?)
+        params_hash[:retail_only] = 0
+      end
+
       # Array of special fields. Prevent adding them to properties.
       special_fields  = ProductImport.settings.values_at(
           :image_fields,
@@ -266,7 +269,8 @@ module Spree
 
 
       #Save the object before creating asssociated objects
-      product.save and product_ids << product.id
+      product.save
+      product_ids << product.id unless product_ids.include?(product.id)
       log("Saved object before creating associated objects for: #{product.name}")
 
       #In creates, slug is assigned automatically, and is not assigned to the csv value.
@@ -532,7 +536,7 @@ module Spree
         #Spree only needs to know the most detailed taxonomy item
         product.taxons << last_taxon unless product.taxons.include?(last_taxon)
       end
-      
+
       if (putInTop and defined?(SolidusSortProductsTaxon))
         if(SolidusSortProductsTaxon::Config.activated)
           unless product.put_in_taxons_top(product.taxons)
@@ -594,7 +598,6 @@ module Spree
     end
 
     def fail_and_error(msg)
-      failure
       raise ImportError, msg
     end
     #Special process of prices because of locales and different decimal separator characters.
