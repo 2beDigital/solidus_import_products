@@ -1,4 +1,5 @@
 require 'solidus_core'
 require 'solidus_support'
 require 'solidus_auth_devise'
+require 'deface'
 require 'solidus_import_products/engine'
