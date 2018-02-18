@@ -5,7 +5,7 @@ require File.expand_path("../dummy/config/environment.rb",  __FILE__)
 
 require 'rspec/rails'
 require 'ffaker'
-
+require 'capybara/rspec'
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.
 Dir[File.join(File.dirname(__FILE__), "support/**/*.rb")].each {|f| require f }
@@ -25,6 +25,7 @@ RSpec.configure do |config|
 
   config.fixture_path = "#{::Rails.root}/spec/fixtures"
 
+  config.infer_spec_type_from_file_location!
   #config.include Devise::TestHelpers, :type => :controller
   # If you're not using ActiveRecord, or you'd prefer not to run each of your
   # examples within a transaction, comment the following line or assign false
@@ -33,4 +34,5 @@ RSpec.configure do |config|
   config.include Solidus::UrlHelpers
   config.include FactoryBot::Syntax::Methods
   config.include ProductImportHelpers
+  config.include AuthenticationHelpers, type: :feature
 end
