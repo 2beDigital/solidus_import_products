@@ -28,9 +28,8 @@ class ImportProductsJob < ActiveJob::Base
   end
   private
   def log(message, severity = :info)
-    @rake_log ||= ActiveSupport::Logger.new('log/import_products.log')
+    @rake_log ||= ActiveSupport::Logger.new(ProductImport.settings[:log_to])
     message = "[#{Time.now.to_s(:db)}] [#{severity.to_s.capitalize}] #{message}\n"
     @rake_log.send severity, message
-    puts message
   end
 end
