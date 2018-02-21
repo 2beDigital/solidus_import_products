@@ -32,7 +32,5 @@ RSpec.configure do |config|
   # instead of true.
   config.use_transactional_fixtures = true
   config.include Solidus::UrlHelpers
-  config.include FactoryBot::Syntax::Methods
-  config.include ProductImportHelpers
   config.include AuthenticationHelpers, type: :feature
 end

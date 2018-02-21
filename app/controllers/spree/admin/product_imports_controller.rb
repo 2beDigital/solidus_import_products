@@ -12,18 +12,16 @@ module Spree
       end
 
       def create
-        @product_import = Spree::ProductImport.create(product_import_params)
-				@product_import.created_by=spree_current_user.id
-				@product_import.save
+        @product_import = spree_current_user.product_imports.create(product_import_params)
         begin
           numProds=@product_import.productsCount
           if numProds > Spree::ProductImport.settings[:num_prods_for_delayed]
-						ImportProductsJob.perform_later(@product_import.id)
-					  flash[:notice] = t('product_import_processing')
+            ImportProductsJob.perform_later(@product_import)
+            flash[:notice] = t('product_import_processing')
           else
             @product_import.import_data!(Spree::ProductImport.settings[:transaction])
-					  flash[:success] = t('product_import_imported')
-            end
+            flash[:success] = t('product_import_imported')
+          end
         rescue StandardError => e
           @product_import.error_message=e.message
           @product_import.failure

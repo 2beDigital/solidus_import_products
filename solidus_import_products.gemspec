@@ -20,10 +20,11 @@ Gem::Specification.new do |s|
   s.add_dependency 'solidus_support'
 
   s.add_development_dependency 'capybara', '~> 2.17'
-  s.add_development_dependency 'factory_bot', '~> 4.8'
+  s.add_development_dependency 'factory_bot_rails', '~> 4.8'
   s.add_development_dependency 'ffaker'
-  s.add_development_dependency 'rspec-rails', '~> 3.7.2'
-  s.add_development_dependency 'sqlite3'
   s.add_development_dependency 'launchy', '~> 2.0.5'
+  s.add_development_dependency 'rspec-rails', '~> 3.7.2'
+  s.add_development_dependency 'shoulda-matchers', '~> 3.1'
+  s.add_development_dependency 'sqlite3'
 
 end

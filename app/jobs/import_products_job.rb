@@ -1,35 +1,16 @@
-class ImportProductsJob < ActiveJob::Base
-	include SuckerPunch::Job
+class ImportProductsJob < ApplicationJob
   queue_as :default
 
-	after_perform :notify_admin
-
-  rescue_from(StandardError) do |exception|
-    Rails.logger.error("[ActiveJob] [#{self.class}] [#{job_id}] ID: #{@product_id} #{exception}")
-		products=Spree::ProductImport.find(@product_id)
-		user=Spree::User.find(products.created_by)
-    Spree::UserMailer.product_import_results(user, exception.message+" "+exception.backtrace.join("\n")).deliver_later
-    #Hacemos aquí el update para que aunque falle, enviemos el mail igualmente
-    products.error_message=exception.message
-    products.failure
-  end
-
-  def perform(product_id)
-		@product_id=product_id
-    products=Spree::ProductImport.find(product_id)
-    products.import_data!(true)
-  end
-
-  def notify_admin
-		products=Spree::ProductImport.find(@product_id)
-		user=Spree::User.find(products.created_by)
-		log("USER: #{user.email}")
-    Spree::UserMailer.product_import_results(user).deliver_later
-  end
-  private
-  def log(message, severity = :info)
-    @rake_log ||= ActiveSupport::Logger.new(ProductImport.settings[:log_to])
-    message = "[#{Time.now.to_s(:db)}] [#{severity.to_s.capitalize}] #{message}\n"
-    @rake_log.send severity, message
+  def perform(product_import)
+    user = product_import.user
+    begin
+      product_import.import_data!(true)
+      Spree::UserMailer.product_import_results(user).deliver_later
+    rescue StandardError => exception
+      Rails.logger.error("[ActiveJob] [ImportProductsJob] [#{job_id}] ID: #{product_import} #{exception}")
+      product_import.error_message = exception.message
+      product_import.failure
+      Spree::UserMailer.product_import_results(user, "#{exception.message}  #{exception.backtrace.join('\n')}").deliver_later
+    end
   end
 end
