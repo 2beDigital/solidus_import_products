@@ -68,7 +68,7 @@ INSTALLATION
 SAMPLE FILEs
 ==============
 
-Some basic samples files could be find in [spec/fixture](spec/fixture/)
+Some basic samples files could be find in [spec/fixtures](spec/fixtures/)
 
 
 ATTRIBUTION
