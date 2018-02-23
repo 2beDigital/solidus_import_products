@@ -13,13 +13,13 @@ RSpec.describe ImportProductsJob, type: :job do
     it { expect { described_class.perform_later(products_import) }.to have_enqueued_job(ImportProductsJob) }
 
     describe 'perform' do
-      it 'call import_products!' do
-        expect_any_instance_of(Spree::ProductImport).to receive(:import_data!).with(true).and_return(true)
+      it 'call SolidusImportProducts::Import' do
+        expect(SolidusImportProducts::Import).to receive(:call).and_return(true)
         job_now
       end
 
       it 'success' do
-        allow_any_instance_of(Spree::ProductImport).to receive(:import_data!).with(true).and_return(true)
+        allow(SolidusImportProducts::Import).to receive(:call).and_return(true)
 
         expect do
           perform_enqueued_jobs { job_now }
@@ -27,13 +27,12 @@ RSpec.describe ImportProductsJob, type: :job do
       end
 
       it 'error' do
-        allow_any_instance_of(Spree::ProductImport).to receive(:import_data!).with(true).and_raise { Spree::ImportError }
+        allow(SolidusImportProducts::Import).to(receive(:call).and_raise { SolidusImportProducts::Exception::ImportError })
 
         expect do
           perform_enqueued_jobs { job_now }
         end.to change(Spree::UserMailer.deliveries, :size).by(1)
       end
-
     end
   end
 end
