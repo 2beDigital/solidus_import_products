@@ -10,12 +10,18 @@ module SolidusImportProducts
       self.rows = CSV.parse(csv_string, col_sep: separator_char)
     end
 
+    # column_mappings
+    # This method attempts to automatically map headings in the CSV files
+    # with fields in the product and variant models.
+    # Rows[0] is an array of headings for columns - SKU, Master Price, etc.)
+    # @return a hash of symbol heading => column index pairs
     def column_mappings
-      if Spree::ProductImport.settings[:first_row_is_headings]
-        get_column_mappings(rows[0])
-      else
-        Spree::ProductImport.settings[:column_mappings]
+      mappings = {}
+      rows[0].each_with_index do |heading, index|
+        break if heading.blank?
+        mappings[heading.downcase.gsub(/\A\s*/, '').chomp.gsub(/\s/, '_').to_sym] = index
       end
+      mappings
     end
 
     def data_rows
@@ -24,29 +30,6 @@ module SolidusImportProducts
 
     def products_count
       data_rows.count
-    end
-
-    private
-
-    # get_column_mappings
-    # This method attempts to automatically map headings in the CSV files
-    # with fields in the product and variant models.
-    # If the headings of columns are going to be called something other than this,
-    # or if the files will not have headings, then the manual initializer
-    # mapping of columns must be used.
-    # Row is an array of headings for columns - SKU, Master Price, etc.)
-    # @return a hash of symbol heading => column index pairs
-    def get_column_mappings(row)
-      mappings = {}
-      row.each_with_index do |heading, index|
-        # Stop collecting headings, if heading is empty
-        if not heading.blank?
-          mappings[heading.downcase.gsub(/\A\s*/, '').chomp.gsub(/\s/, '_').to_sym] = index
-        else
-          break
-        end
-      end
-      mappings
     end
   end
 end
