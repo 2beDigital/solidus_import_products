@@ -60,11 +60,10 @@ module SolidusImportProducts
 
       if product_information[:shipping_category_id].nil?
         sc = Spree::ShippingCategory.first
-        product_information[:shipping_category_id] = sc.id unless sc.nil?
+        product_information[:shipping_category_id] = sc.id if sc
       end
 
       product_information[:retail_only] = 0 if product_information[:retail_only].nil?
     end
-
   end
 end

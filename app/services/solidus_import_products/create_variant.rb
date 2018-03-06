@@ -21,9 +21,6 @@ module SolidusImportProducts
 
       load_or_initialize_variant
 
-      variant_comparator_field = Spree::ProductImport.settings[:variant_comparator_field]
-      logger.log("VARIANT:: #{variant.inspect} /// #{product_information[variant_comparator_field]} /// #{variant_comparator_field}", :debug)
-
       product_information.each do |field, value|
         if field.to_s.eql?('price')
           variant.price = convert_to_price(value)
@@ -41,7 +38,7 @@ module SolidusImportProducts
       else
         message = "A variant could not be imported - here is the information we have:\n #{product_information}, #{variant.errors.full_messages.join(', ')}"
         logger.log(message, :error)
-        raise SolidusImportProducts::Exception::VariantError, msg
+        raise SolidusImportProducts::Exception::VariantError, message
       end
 
       stock_items
@@ -53,27 +50,32 @@ module SolidusImportProducts
 
     def load_or_initialize_variant
       self.variant = Spree::Variant.find_by(sku: product_information[:sku])
-      raise SolidusImportProducts::Exception::SkuError, "SKU #{variant.sku} should belongs to #{product.inspect} but was #{variant.product.inspect}" if variant && variant.product != product
 
       if variant
+        if variant.product != product
+          raise SolidusImportProducts::Exception::SkuError,
+                "SKU #{product_information[:sku]} should belongs to #{product.inspect} but was #{variant.product.inspect}"
+        end
         product_information.delete(:id)
       else
-        self.variant = product.variants.new
-        variant.id = product_information[:id]
+        self.variant = product.variants.new(sku: product_information[:sku], id: product_information[:id])
       end
-
     end
 
     def options(field, value)
-      if (value && !(field.to_s =~ /^(sku|slug|name|description|price|on_hand|taxonomies|image_product|alt_product|available_on|shipping_category_id).*$/))
-        applicable_option_type = Spree::OptionType.where(name: field.to_s).or(Spree::OptionType.where(presentation: field.to_s)).first
-        if applicable_option_type.is_a?(Spree::OptionType)
-          product.option_types << applicable_option_type unless product.option_types.include?(applicable_option_type)
-          opt_value = applicable_option_type.option_values.where(presentation: value).or(applicable_option_type.option_values.where(name:value)).first
-          opt_value = applicable_option_type.option_values.create(:presentation => value, :name => value) unless opt_value
-          variant.option_values << opt_value unless variant.option_values.include?(opt_value)
-        end
-      end
+      return unless value
+      return if SolidusImportProducts::Parser.variant_field?(field)
+
+      applicable_option_type = Spree::OptionType.where('name = :field or presentation = :field', field: field.to_s).first
+      return unless applicable_option_type
+
+      product.option_types << applicable_option_type unless product.option_types.include?(applicable_option_type)
+
+      opt_value = applicable_option_type.option_values.where('name = :value or presentation = :value', value: value).first
+
+      opt_value ||= applicable_option_type.option_values.create(presentation: value, name: value)
+
+      variant.option_values << opt_value unless variant.option_values.include?(opt_value)
     end
 
     def attach_image
