@@ -26,23 +26,24 @@ module SolidusImportProducts
           variant.price = convert_to_price(value)
         elsif variant.respond_to?("#{field}=")
           variant.send("#{field}=", value)
+        elsif SolidusImportProducts::Parser::NON_VARIANT_OPTION_FIELDS.include?(field.to_s)
+          next
         end
-        # We only apply OptionTypes if value is not null.
         options(field, value)
       end
 
-      if variant.valid?
+      begin
         variant.save
         attach_image
+        stock_items
         logger.log("Variant of SKU #{variant.sku} successfully imported.\n", :debug)
-      else
-        message = "A variant could not be imported - here is the information we have:\n #{product_information}, #{variant.errors.full_messages.join(', ')}"
+      rescue StandardError => e
+        message = "A variant could not be imported - here is the information we have:\n"
+        message += "#{product_information}, #{variant.errors.full_messages.join(', ')}\n"
+        message += e.message.to_s
         logger.log(message, :error)
         raise SolidusImportProducts::Exception::VariantError, message
       end
-
-      stock_items
-
       variant
     end
 
@@ -64,18 +65,24 @@ module SolidusImportProducts
 
     def options(field, value)
       return unless value
-      return if SolidusImportProducts::Parser.variant_field?(field)
+      return if SolidusImportProducts::Parser.variant_option_field?(field)
 
-      applicable_option_type = Spree::OptionType.where('name = :field or presentation = :field', field: field.to_s).first
-      return unless applicable_option_type
+      option_type = get_or_create_option_type(field)
+      option_value = get_or_create_option_value(option_type, value)
 
-      product.option_types << applicable_option_type unless product.option_types.include?(applicable_option_type)
+      product.option_types << option_type unless product.option_types.include?(option_type)
 
-      opt_value = applicable_option_type.option_values.where('name = :value or presentation = :value', value: value).first
+      variant.option_values << option_value unless variant.option_values.include?(option_value)
+    end
 
-      opt_value ||= applicable_option_type.option_values.create(presentation: value, name: value)
+    def get_or_create_option_type(field)
+      Spree::OptionType.where('name = :field or presentation = :field', field: field.to_s).first ||
+        Spree::OptionType.create(name: field, presentation: field)
+    end
 
-      variant.option_values << opt_value unless variant.option_values.include?(opt_value)
+    def get_or_create_option_value(option_type, value)
+      option_type.option_values.where('name = :value or presentation = :value', value: value).first ||
+        option_type.option_values.create(presentation: value, name: value)
     end
 
     def attach_image
@@ -90,13 +97,19 @@ module SolidusImportProducts
 
     def stock_items
       source_location = Spree::StockLocation.find_by(default: true)
+      unless source_location
+        logger.log('Seems that there are no SourceLocation set right?, so stock will not set.', :warn) if product_information[:stock] ||
+                           product_information[:backorderable]
+        return
+      end
       logger.log("SourceLocation: #{source_location.inspect}", :debug)
-      return unless source_location
 
       stock_item = variant.stock_items.where(stock_location_id: source_location.id).first_or_initialize
 
-      stock_item.send('backorderable=', product_information[:backorderable]) if product_information[:backorderable] && stock_item.respond_to?('backorderable=')
-      stock_item.set_count_on_hand(product_information[:on_hand]) if product_information[:on_hand]
+      stock_item.send('backorderable=', product_information[:backorderable]) if product_information.has_key?(:backorderable) &&
+        stock_item.respond_to?('backorderable=')
+
+      stock_item.set_count_on_hand(product_information[:stock]) if product_information[:stock]
     end
   end
 end

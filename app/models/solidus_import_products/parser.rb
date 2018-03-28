@@ -4,13 +4,13 @@ module SolidusImportProducts
   class Parser
     attr_accessor :rows, :data_file
 
-    NON_VARIANT_FIELDS = %w[sku slug name description price on_hand taxonomies image_product alt_product available_on shipping_category_id].freeze
+    NON_VARIANT_OPTION_FIELDS = %w[sku slug name description price stock backorderable taxonomies image_product alt_product available_on shipping_category_id ].freeze
 
-    # variant_field?
+    # variant_option_field?
     # Class method that check if a field is a variant option field
     # @return true or false
-    def self.variant_field?(field)
-      NON_VARIANT_FIELDS.include?(field.to_s)
+    def self.variant_option_field?(field)
+      NON_VARIANT_OPTION_FIELDS.include?(field.to_s)
     end
 
     def initialize(data_file, encoding_csv, separator_char)
