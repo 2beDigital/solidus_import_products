@@ -35,13 +35,13 @@ module Spree
 
       before_transition to: [:failed] do |import|
         import.product_ids = []
-        import.failed_at = Time.now
+        import.failed_at = Time.current
         import.completed_at = nil
       end
 
       before_transition to: [:completed] do |import|
         import.failed_at = nil
-        import.completed_at = Time.now
+        import.completed_at = Time.current
       end
     end
 
