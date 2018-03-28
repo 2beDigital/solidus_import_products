@@ -14,15 +14,15 @@ RSpec.configure do |config|
       add_group 'Libraries', 'lib'
 
       add_filter '.bundle'
-      #add_filter 'lib/solidus_mercado_pago/version.rb'
+      # add_filter 'lib/solidus_mercado_pago/version.rb'
     end
   end
 end
 
 # This file is copied to ~/spec when you run 'ruby script/generate rspec'
 # from the project root directory.
-ENV["RAILS_ENV"] ||= 'test'
-require File.expand_path("../dummy/config/environment.rb",  __FILE__)
+ENV['RAILS_ENV'] ||= 'test'
+require File.expand_path('../dummy/config/environment.rb', __FILE__)
 
 require 'rspec/rails'
 require 'ffaker'
@@ -31,7 +31,7 @@ require 'devise'
 
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.
-Dir[File.join(File.dirname(__FILE__), "support/**/*.rb")].each {|f| require f }
+Dir[File.join(File.dirname(__FILE__), 'support/**/*.rb')].each { |f| require f }
 
 # Requires factories defined in spree_core
 require 'spree/testing_support/factories'
@@ -58,5 +58,4 @@ RSpec.configure do |config|
   config.include Spree::TestingSupport::Preferences
   config.include Spree::TestingSupport::ControllerRequests, type: :controller
   config.include Devise::Test::ControllerHelpers, type: :controller
-
 end

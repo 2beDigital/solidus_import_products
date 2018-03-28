@@ -99,15 +99,15 @@ module SolidusImportProducts
       source_location = Spree::StockLocation.find_by(default: true)
       unless source_location
         logger.log('Seems that there are no SourceLocation set right?, so stock will not set.', :warn) if product_information[:stock] ||
-                           product_information[:backorderable]
+                                                                                                          product_information[:backorderable]
         return
       end
       logger.log("SourceLocation: #{source_location.inspect}", :debug)
 
       stock_item = variant.stock_items.where(stock_location_id: source_location.id).first_or_initialize
 
-      stock_item.send('backorderable=', product_information[:backorderable]) if product_information.has_key?(:backorderable) &&
-        stock_item.respond_to?('backorderable=')
+      stock_item.send('backorderable=', product_information[:backorderable]) if product_information.key?(:backorderable) &&
+                                                                                stock_item.respond_to?('backorderable=')
 
       stock_item.set_count_on_hand(product_information[:stock]) if product_information[:stock]
     end

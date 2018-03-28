@@ -4,7 +4,7 @@ module SolidusImportProducts
   class Parser
     attr_accessor :rows, :data_file
 
-    NON_VARIANT_OPTION_FIELDS = %w[sku slug name description price stock backorderable taxonomies image_product alt_product available_on shipping_category_id ].freeze
+    NON_VARIANT_OPTION_FIELDS = %w[sku slug name description price stock backorderable taxonomies image_product alt_product available_on shipping_category_id].freeze
 
     # variant_option_field?
     # Class method that check if a field is a variant option field

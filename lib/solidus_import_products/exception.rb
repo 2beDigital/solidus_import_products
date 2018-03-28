@@ -13,6 +13,5 @@ module SolidusImportProducts
         super
       end
     end
-
   end
 end

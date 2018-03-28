@@ -12,7 +12,7 @@ module SolidusImportProducts
       self.product = args[:product]
 
       properties_hash.each do |property, value|
-        product_property = Spree::ProductProperty.where(:product_id => product.id, :property_id => property.id).first_or_initialize
+        product_property = Spree::ProductProperty.where(product_id: product.id, property_id: property.id).first_or_initialize
         product_property.value = value
         product_property.save!
       end

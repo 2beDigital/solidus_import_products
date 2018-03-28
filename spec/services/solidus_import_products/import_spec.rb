@@ -50,7 +50,7 @@ module SolidusImportProducts
       describe 'on invalid csv' do
         subject(:invalid) { SolidusImportProducts::Import.call(product_imports: invalid_import) }
 
-        it 'should not tracks product created ids' do
+        it 'does not tracks product created ids' do
           expect { invalid }.to raise_error(SolidusImportProducts::Exception::InvalidPrice)
           invalid_import.reload
           expect(invalid_import.product_ids).to be_empty

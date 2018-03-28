@@ -51,6 +51,5 @@ module SolidusImportProducts
       end
       product.shipping_category = Spree::ShippingCategory.first
     end
-
   end
 end

@@ -7,7 +7,7 @@ require 'spree/testing_support/common_rake'
 
 RSpec::Core::RakeTask.new
 
-task :default => [:spec]
+task default: [:spec]
 
 spec = eval(File.read('solidus_import_products.gemspec'))
 
@@ -15,14 +15,14 @@ Gem::PackageTask.new(spec) do |p|
   p.gem_spec = spec
 end
 
-desc "Release to gemcutter"
-task :release => :package do
+desc 'Release to gemcutter'
+task release: :package do
   require 'rake/gemcutter'
   Rake::Gemcutter::Tasks.new(spec).define
   Rake::Task['gem:push'].invoke
 end
 
-desc "Generates a dummy app for testing"
+desc 'Generates a dummy app for testing'
 task :test_app do
   ENV['LIB_NAME'] = 'solidus_import_products'
   Rake::Task['common:test_app'].invoke

@@ -6,8 +6,8 @@ module SolidusImportProducts
           @user = user
           @error_message = error_message
           store = Spree::Store.default
-          #attachments["import_products.log"] = File.read(Spree::ProductImport.settings[:log_to]) if @error_message.nil?
-          mail(:to => @user.email, :from => from_address(store), :subject => "Spree: Import Products #{error_message.nil? ? "Success" : "Failure"}")
+          # attachments["import_products.log"] = File.read(Spree::ProductImport.settings[:log_to]) if @error_message.nil?
+          mail(to: @user.email, from: from_address(store), subject: "Spree: Import Products #{error_message.nil? ? 'Success' : 'Failure'}")
         end
       end
     end

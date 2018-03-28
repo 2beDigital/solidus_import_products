@@ -35,6 +35,5 @@ module SolidusImportProducts
       product_imports.failure!
       raise e
     end
-
   end
 end
