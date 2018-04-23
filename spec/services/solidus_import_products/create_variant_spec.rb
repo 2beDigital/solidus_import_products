@@ -28,8 +28,10 @@ module SolidusImportProducts
           let(:product_information) do
             { name: 'productX',
               sku: '002b',
-              type1.name => value1.presentation,
-              type2.name => value2.presentation,
+              variant_options: {
+                type1.name => value1.presentation,
+                type2.name => value2.presentation
+              },
               price: '10.51',
               backorderable: true,
               stock: '99' }
@@ -49,9 +51,11 @@ module SolidusImportProducts
           let(:product_information) do
             { name: 'productX',
               sku: '002b',
-              type1.name => value1.presentation,
-              type2.name => 'another presentation',
-              'new type' => 'some value',
+              variant_options: {
+                type1.name => value1.presentation,
+                type2.name => 'another presentation',
+                'new type' => 'some value'
+              },
               price: '10.51' }
           end
 
@@ -67,8 +71,10 @@ module SolidusImportProducts
           let(:product_information) do
             { name: 'productX',
               sku: '002b',
-              type1.name => value1.presentation,
-              type2.name => value2.presentation }
+              variant_options: {
+                type1.name => value1.presentation,
+                type2.name => value2.presentation
+              } }
           end
 
           it { expect(variant.price).to eq 124.10 }
@@ -80,8 +86,10 @@ module SolidusImportProducts
           let(:product_information) do
             { name: 'productX',
               sku: '002b',
-              type1.name => value1.presentation,
-              type2.name => value2.presentation,
+              variant_options: {
+                type1.name => value1.presentation,
+                type2.name => value2.presentation
+              },
               stock: 99,
               backorderable: false,
               price: '10.51' }
@@ -131,8 +139,10 @@ module SolidusImportProducts
             let(:product_information) do
               { name: 'productX',
                 sku: '002b',
-                type1.name => value1.presentation,
-                type2.name => value2.presentation,
+                variant_options: {
+                  type1.name => value1.presentation,
+                  type2.name => value2.presentation
+                },
                 price: '10.51' }
             end
 

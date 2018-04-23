@@ -1,15 +1,16 @@
 module SolidusImportProducts
   class ProcessRow
-    attr_accessor :product_imports, :logger, :row, :col, :product_information, :variant_field, :skus_of_products_before_import
+    attr_accessor :parser, :product_imports, :logger, :row, :col, :product_information, :variant_field, :skus_of_products_before_import
 
-    def initialize(args = { product_imports: nil, row: nil, col: nil, variant_field: nil, skus_of_products_before_import: nil })
+    def initialize(args = { parser: nil, product_imports: nil, row: nil, col: nil, variant_field: nil, skus_of_products_before_import: nil })
+      self.parser = args[:parser]
       self.product_imports = args[:product_imports]
       self.row = args[:row]
       self.col = args[:col]
       self.variant_field = args[:variant_field]
       self.skus_of_products_before_import = args[:skus_of_products_before_import]
       self.logger = SolidusImportProducts::Logger.instance
-      self.product_information = {}
+      self.product_information = { variant_options: {} }
     end
 
     def self.call(options = {})
@@ -49,7 +50,11 @@ module SolidusImportProducts
     def extract_product_information
       col.each do |key, value|
         row[value].try :strip!
-        product_information[key] = row[value]
+        if parser.variant_option_field?(key)
+          product_information[:variant_options][key] = row[value]
+        else
+          product_information[key] = row[value]
+        end
       end
 
       product_information_default_values

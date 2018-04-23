@@ -46,7 +46,7 @@ module Spree
     end
 
     def parse
-      @_parse ||= SolidusImportProducts::Parser.new(data_file.url(:default, timestamp: false), encoding_csv, separatorChar)
+      @_parse ||= SolidusImportProducts::Parser.parse(:csv, data_file.url(:default, timestamp: false), { encoding_csv: encoding_csv, separator_char: separatorChar })
     end
 
     def products

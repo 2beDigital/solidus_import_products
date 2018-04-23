@@ -13,5 +13,7 @@ module SolidusImportProducts
         super
       end
     end
+
+    class InvalidParseStrategy < Base; end
   end
 end

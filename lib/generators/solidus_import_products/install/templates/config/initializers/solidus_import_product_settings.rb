@@ -1,20 +1,4 @@
 Spree::ProductImport.settings = {
-  column_mappings: { # Change these for manual mapping of product fields to the CSV file
-    sku: 0,
-    name: 1,
-    master_price: 2,
-    cost_price: 3,
-    weight: 4,
-    height: 5,
-    width: 6,
-    depth: 7,
-    image_main: 8,
-    image_2: 9,
-    image_3: 10,
-    image_4: 11,
-    description: 12,
-    category: 13
-  },
   num_prods_for_delayed: 20, # From this number of products, the process is executed in delayed_job. Under it is processed immediately.
   create_missing_taxonomies: true,
   taxonomy_fields: [:taxonomies], # Fields that should automatically be parsed for taxons to associate
@@ -23,7 +7,6 @@ Spree::ProductImport.settings = {
   image_text_products: :alt_product, # Field that contains alt text for images of product.
   image_text_variants: :alt_variant, # Field that contains alt text for images of variant.
   product_image_path: "#{Rails.root}/lib/etc/product_data/product-images/", # The location of images on disk
-  rows_to_skip: 1, # If your CSV file will have headers, this field changes how many rows the reader will skip
   log_to: File.join(Rails.root, '/log/', "import_products_#{Rails.env}.log"), # Where to log to
   destroy_original_products: false, # Disabled #Delete the products originally in the database after the import?
   first_row_is_headings: true, # Reads column names from first row if set to true.

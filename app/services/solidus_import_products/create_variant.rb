@@ -26,10 +26,9 @@ module SolidusImportProducts
           variant.price = convert_to_price(value)
         elsif variant.respond_to?("#{field}=")
           variant.send("#{field}=", value)
-        elsif SolidusImportProducts::Parser::NON_VARIANT_OPTION_FIELDS.include?(field.to_s)
-          next
+        elsif field == :variant_options
+          value.each { |variant_field, variant_value| options(variant_field, variant_value) }
         end
-        options(field, value)
       end
 
       begin
@@ -65,7 +64,6 @@ module SolidusImportProducts
 
     def options(field, value)
       return unless value
-      return if SolidusImportProducts::Parser.variant_option_field?(field)
 
       option_type = get_or_create_option_type(field)
       option_value = get_or_create_option_value(option_type, value)

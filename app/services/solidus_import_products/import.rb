@@ -21,6 +21,7 @@ module SolidusImportProducts
       ActiveRecord::Base.transaction do
         parser.data_rows.each do |row|
           SolidusImportProducts::ProcessRow.call(
+            parser: parser,
             product_imports: product_imports,
             row: row,
             col: col,
