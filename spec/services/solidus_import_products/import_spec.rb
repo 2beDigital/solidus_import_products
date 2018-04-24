@@ -45,18 +45,39 @@ module SolidusImportProducts
             expect(last_product.variants.count).to eq 2
           end
         end
+
+        describe 'handles product taxons' do
+          subject(:valid) { SolidusImportProducts::Import.call(product_imports: valid_import) }
+
+          let(:product) { Spree::Product.last }
+
+          it { expect { valid }.to change { Spree::Taxonomy.count }.by 1 }
+
+          it '' do
+            valid
+            expect(product.taxons.first.name).to eq('Clothing')
+          end
+        end
       end
 
       describe 'on invalid csv' do
         subject(:invalid) { SolidusImportProducts::Import.call(product_imports: invalid_import) }
 
-        it 'does not tracks product created ids' do
-          expect { invalid }.to raise_error(SolidusImportProducts::Exception::InvalidPrice)
-          invalid_import.reload
-          expect(invalid_import.product_ids).to be_empty
-          expect(invalid_import.products).to be_empty
-          expect(invalid_import.reload.state).to eq 'failed'
-          expect(Spree::Product.count).to eq 0
+        it { expect { invalid }.to raise_error(SolidusImportProducts::Exception::InvalidPrice) }
+
+        describe 'does not tracks product created ids' do
+          before do
+            begin
+              invalid
+            rescue SolidusImportProducts::Exception::InvalidPrice
+            end
+            invalid_import.reload
+          end
+
+          it { expect(invalid_import.product_ids).to be_empty }
+          it { expect(invalid_import.products).to be_empty }
+          it { expect(invalid_import.reload.state).to eq 'failed' }
+          it { expect(Spree::Product.count).to eq 0 }
         end
       end
     end

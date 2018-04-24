@@ -45,7 +45,7 @@ module SolidusImportProducts
       # images, and the file is accessible to the script.
       # It is basically just a wrapper around basic File IO methods.
       def fetch_local_image(filename)
-        filename = ProductImport.settings[:product_image_path] + filename
+        filename = Spree::ProductImport.settings[:product_image_path] + filename
         if File.exist?(filename) && File.readable?(filename)
           return File.open(filename, 'rb')
         else
@@ -94,8 +94,8 @@ module SolidusImportProducts
 
         taxon_hierarchy.split(/\s*\|\s*/).each do |hierarchy|
           hierarchy = hierarchy.split(/\s*>\s*/)
-          taxonomy = Spree::Taxonomy.with_translations.where('lower(spree_taxonomy_translations.name) = ?', hierarchy.first.downcase).first
-          taxonomy = Taxonomy.create(name: hierarchy.first.capitalize) if taxonomy.nil? && ProductImport.settings[:create_missing_taxonomies]
+          taxonomy = Spree::Taxonomy.where('lower(spree_taxonomies.name) = ?', hierarchy.first.downcase).first
+          taxonomy = Spree::Taxonomy.create(name: hierarchy.first.capitalize) if taxonomy.nil? && Spree::ProductImport.settings[:create_missing_taxonomies]
           # Check if the Taxonomy is valid
           unless taxonomy.valid?
             logger.log(msg = "A product could not be imported - here is the information we have:\n" \
