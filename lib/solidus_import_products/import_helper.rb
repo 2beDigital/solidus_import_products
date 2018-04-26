@@ -7,33 +7,19 @@ module SolidusImportProducts
     require 'open-uri'
 
     included do
-      # Special process of prices because of locales and different decimal separator characters.
-      # We want to get a format with dot as decimal separator and without thousand separator
-      def convert_to_price(price_str)
-        raise SolidusImportProducts::Exception::InvalidPrice unless price_str
-        punt = price_str.index('.')
-        coma = price_str.index(',')
-        if !coma.nil? && !punt.nil?
-          price_str.gsub!(punt < coma ? '.' : ',', '')
-        end
-        price_str.tr(',', '.').to_f
-      end
-
       ### IMAGE HELPERS ###
       # find_and_attach_image_to
       # This method attaches images to products. The images may come
       # from a local source (i.e. on disk), or they may be online (HTTP/HTTPS).
-      def find_and_attach_image_to(product_or_variant, filename, alt_text)
+      def find_and_attach_image_to(product_or_variant, filename)
         return if filename.blank?
 
-        # The image can be fetched from an HTTP or local source - either method returns a Tempfile
-        file = filename =~ /\Ahttp[s]*:\/\// ? fetch_remote_image(filename) : fetch_local_image(filename)
-
-        # An image has an attachment (the image file) and some object which 'views' it
-        product_image = Spree::Image.new(attachment: file,
+        temp_file = fetch_image(filename)
+        return unless temp_file
+        product_image = Spree::Image.new(attachment: temp_file,
                                          viewable_id: product_or_variant.id,
                                          viewable_type: 'Spree::Variant',
-                                         alt: alt_text,
+                                         alt: '',
                                          position: product_or_variant.images.length)
 
         logger.log("#{product_image.viewable_id} : #{product_image.viewable_type} : #{product_image.position}", :debug)
@@ -41,17 +27,20 @@ module SolidusImportProducts
         product_or_variant.images << product_image if product_image.save
       end
 
+      def fetch_image(filename)
+        filename =~ /\Ahttp[s]*:\/\// ? fetch_remote_image(filename) : fetch_local_image(filename)
+      end
+
       # This method is used when we have a set location on disk for
       # images, and the file is accessible to the script.
       # It is basically just a wrapper around basic File IO methods.
       def fetch_local_image(filename)
         filename = Spree::ProductImport.settings[:product_image_path] + filename
-        if File.exist?(filename) && File.readable?(filename)
-          return File.open(filename, 'rb')
-        else
+        unless File.exist?(filename) && File.readable?(filename)
           logger.log("Image #{filename} was not found on the server, so this image was not imported.", :warn)
           return nil
         end
+        File.open(filename, 'rb')
       end
 
       # This method can be used when the filename matches the format of a URL.
@@ -67,8 +56,7 @@ module SolidusImportProducts
         return io
       rescue OpenURI::HTTPError => error
         logger.log("Image #{filename} retrival returned #{error.message}, so this image was not imported")
-      rescue => error
-        logger.log("Image #{filename} could not be downloaded, so was not imported. #{error.message}")
+        return nil
       end
 
       ### TAXON HELPERS ###
@@ -83,20 +71,17 @@ module SolidusImportProducts
       # a particular taxon to be picked out
       # 3. An item > item & item > item will work as above, but will associate multiple
       # taxons with that product. This form should also work with format 1.
-      def associate_product_with_taxon(product, taxonomy, taxon_hierarchy, putInTop)
-        return if product.nil? || taxonomy.nil? || taxon_hierarchy.nil?
-
-        # Using find_or_create_by_name is more elegant, but our magical params code automatically downcases
-        # the taxonomy name, so unless we are using MySQL, this isn't going to work.
-        # taxonomy_name = taxonomy
-        # taxonomy = Taxonomy.find(:first, :conditions => ["lower(name) = ?", taxonomy])
-        # taxonomy = Taxonomy.create(:name => taxonomy_name.capitalize) if taxonomy.nil? && ProductImport.settings[:create_missing_taxonomies]
+      def associate_product_with_taxon(product, taxon_hierarchy, putInTop)
+        return if product.nil? || taxon_hierarchy.nil?
 
         taxon_hierarchy.split(/\s*\|\s*/).each do |hierarchy|
           hierarchy = hierarchy.split(/\s*>\s*/)
           taxonomy = Spree::Taxonomy.where('lower(spree_taxonomies.name) = ?', hierarchy.first.downcase).first
-          taxonomy = Spree::Taxonomy.create(name: hierarchy.first.capitalize) if taxonomy.nil? && Spree::ProductImport.settings[:create_missing_taxonomies]
-          # Check if the Taxonomy is valid
+
+          if taxonomy.nil? && Spree::ProductImport.settings[:create_missing_taxonomies]
+            taxonomy = Spree::Taxonomy.create(name: hierarchy.first.capitalize)
+          end
+
           unless taxonomy.valid?
             logger.log(msg = "A product could not be imported - here is the information we have:\n" \
               "Product: #{product.inspect}, Taxonomy: #{taxon_hierarchy}, Errors: #{taxonomy.errors.full_messages.join(', ')} \n", :error)
@@ -107,9 +92,7 @@ module SolidusImportProducts
 
           hierarchy.shift
           hierarchy.each do |taxon|
-            # last_taxon = last_taxon.children.find_or_create_by_name_and_taxonomy_id(taxon, taxonomy.id)
             last_taxon = last_taxon.children.find_or_create_by(name: taxon, taxonomy_id: taxonomy.id)
-            # Check if the Taxonomy is valid
             next if last_taxon.valid?
             logger.log(msg = "A product could not be imported - here is the information we have:\n" \
               "Product: #{product.inspect}, Taxonomy: #{taxonomy.inspect}, Taxon: #{last_taxon.inspect}, #{last_taxon.errors.full_messages.join(', ')}", :error)
@@ -119,6 +102,7 @@ module SolidusImportProducts
           product.taxons << last_taxon unless product.taxons.include?(last_taxon)
         end
 
+        # TODO: Not sure what this does.
         if putInTop && defined?(SolidusSortProductsTaxon)
           if SolidusSortProductsTaxon::Config.activated
             unless product.put_in_taxons_top(product.taxons)
@@ -129,7 +113,6 @@ module SolidusImportProducts
           end
         end
       end
-      ### END TAXON HELPERS ###
     end
   end
 end

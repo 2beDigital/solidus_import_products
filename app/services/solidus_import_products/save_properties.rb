@@ -11,7 +11,9 @@ module SolidusImportProducts
       self.properties_hash = args[:properties_hash]
       self.product = args[:product]
 
-      properties_hash.each do |property, value|
+      properties_hash.each do |field, value|
+        property = Spree::Property.where('lower(name) = ?', field).first
+        next unless property
         product_property = Spree::ProductProperty.where(product_id: product.id, property_id: property.id).first_or_initialize
         product_property.value = value
         product_property.save!

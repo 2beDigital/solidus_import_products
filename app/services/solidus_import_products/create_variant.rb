@@ -22,18 +22,20 @@ module SolidusImportProducts
       load_or_initialize_variant
 
       product_information.each do |field, value|
-        if field.to_s.eql?('price')
-          variant.price = convert_to_price(value)
-        elsif variant.respond_to?("#{field}=")
-          variant.send("#{field}=", value)
-        elsif field == :variant_options
+        if field == :variant_options
           value.each { |variant_field, variant_value| options(variant_field, variant_value) }
+        elsif field == :attributes
+          value.each { |attr_field, attr_value| variant.send("#{attr_field}=", attr_value) if variant.respond_to?("#{attr_field}=") }
         end
       end
 
       begin
         variant.save
-        attach_image
+
+        product_information[:variant_images].each do |filename|
+          find_and_attach_image_to(variant, filename)
+        end
+
         stock_items
         logger.log("Variant of SKU #{variant.sku} successfully imported.\n", :debug)
       rescue StandardError => e
@@ -49,16 +51,16 @@ module SolidusImportProducts
     private
 
     def load_or_initialize_variant
-      self.variant = Spree::Variant.find_by(sku: product_information[:sku])
+      self.variant = Spree::Variant.find_by(sku: product_information[:attributes][:sku])
 
       if variant
         if variant.product != product
           raise SolidusImportProducts::Exception::SkuError,
-                "SKU #{product_information[:sku]} should belongs to #{product.inspect} but was #{variant.product.inspect}"
+                "SKU #{product_information[:attributes][:sku]} should belongs to #{product.inspect} but was #{variant.product.inspect}"
         end
-        product_information.delete(:id)
+        product_information[:attributes].delete(:id)
       else
-        self.variant = product.variants.new(sku: product_information[:sku], id: product_information[:id])
+        self.variant = product.variants.new(sku: product_information[:attributes][:sku], id: product_information[:attributes][:id])
       end
     end
 
@@ -85,29 +87,23 @@ module SolidusImportProducts
 
     def attach_image
       Spree::ProductImport.settings[:image_fields_variants].each do |field|
-        find_and_attach_image_to(
-          variant,
-          product_information[field.to_sym],
-          product_information[Spree::ProductImport.settings[:image_text_variants].to_sym]
-        )
+
       end
     end
 
     def stock_items
       source_location = Spree::StockLocation.find_by(default: true)
       unless source_location
-        logger.log('Seems that there are no SourceLocation set right?, so stock will not set.', :warn) if product_information[:stock] ||
-                                                                                                          product_information[:backorderable]
+        logger.log('Seems that there are no SourceLocation set right?, so stock will not set.', :warn) if product_information[:attributes][:stock] || product_information[:attributes][:backorderable]
         return
       end
       logger.log("SourceLocation: #{source_location.inspect}", :debug)
 
       stock_item = variant.stock_items.where(stock_location_id: source_location.id).first_or_initialize
 
-      stock_item.send('backorderable=', product_information[:backorderable]) if product_information.key?(:backorderable) &&
-                                                                                stock_item.respond_to?('backorderable=')
+      stock_item.send('backorderable=', product_information[:attributes][:backorderable]) if product_information[:attributes].key?(:backorderable) && stock_item.respond_to?('backorderable=')
 
-      stock_item.set_count_on_hand(product_information[:stock]) if product_information[:stock]
+      stock_item.set_count_on_hand(product_information[:attributes][:stock]) if product_information[:attributes][:stock]
     end
   end
 end

@@ -1,5 +1,7 @@
 require 'spec_helper'
 
+# TODO: check variant image
+
 module SolidusImportProducts
   describe CreateVariant do
     describe 'call' do
@@ -26,15 +28,20 @@ module SolidusImportProducts
 
         describe 'Basic' do
           let(:product_information) do
-            { name: 'productX',
-              sku: '002b',
+            { attributes:
+              {
+                name: 'productX',
+                sku: '002b',
+                price: '10.51',
+                backorderable: true,
+                stock: '99'
+              },
               variant_options: {
                 type1.name => value1.presentation,
                 type2.name => value2.presentation
               },
-              price: '10.51',
-              backorderable: true,
-              stock: '99' }
+              variant_images: [],
+            }
           end
 
           it { expect { call }.to change { product.variants.size }.by(1) }
@@ -49,14 +56,18 @@ module SolidusImportProducts
         end
         describe 'creates missing option_type and values for new variant' do
           let(:product_information) do
-            { name: 'productX',
-              sku: '002b',
+            { attributes:
+              {
+                name: 'productX',
+                sku: '002b',
+                price: '10.51'
+              },
               variant_options: {
                 type1.name => value1.presentation,
                 type2.name => 'another presentation',
                 'new type' => 'some value'
               },
-              price: '10.51' }
+              variant_images: [] }
           end
 
           it { expect { call }.to change { product.reload.variants.size }.by(1) }
@@ -69,8 +80,12 @@ module SolidusImportProducts
         end
         describe 'if price not set, it assigns product price' do
           let(:product_information) do
-            { name: 'productX',
-              sku: '002b',
+            { attributes:
+              {
+                name: 'productX',
+                sku: '002b'
+              },
+              variant_images: [],
               variant_options: {
                 type1.name => value1.presentation,
                 type2.name => value2.presentation
@@ -84,17 +99,21 @@ module SolidusImportProducts
       describe 'Update existent variant' do
         describe 'Success' do
           let(:product_information) do
-            { name: 'productX',
-              sku: '002b',
+            { attributes:
+              {
+                name: 'productX',
+                sku: '002b',
+                stock: 99,
+                backorderable: false,
+                price: '10.51'
+              },
               variant_options: {
                 type1.name => value1.presentation,
                 type2.name => value2.presentation
               },
-              stock: 99,
-              backorderable: false,
-              price: '10.51' }
+              variant_images: [] }
           end
-          let(:variant) { create(:variant, product: product, sku: product_information[:sku]) }
+          let(:variant) { create(:variant, product: product, sku: product_information[:attributes][:sku]) }
 
           before do
             product.option_types << type1
@@ -125,10 +144,14 @@ module SolidusImportProducts
         describe 'Error' do
           describe 'invalid variant' do
             let(:product_information) do
-              { name: 'productX',
+              { attributes:
+                {
+                  name: 'productX',
+                  variant_images: [],
+                  price: 'invalid_price'
+                },
                 type1.name => value1.presentation,
-                type2.name => value2.presentation,
-                price: 'invalid_price' }
+                type2.name => value2.presentation }
             end
 
             it { expect { call }.to raise_error(SolidusImportProducts::Exception::VariantError) }
@@ -137,13 +160,17 @@ module SolidusImportProducts
             let(:existent_variant) { create(:variant, sku: '002b') }
 
             let(:product_information) do
-              { name: 'productX',
-                sku: '002b',
+              { attributes:
+                {
+                  name: 'productX',
+                  sku: '002b',
+                  price: '10.51'
+                },
+                variant_images: [],
                 variant_options: {
                   type1.name => value1.presentation,
                   type2.name => value2.presentation
-                },
-                price: '10.51' }
+                } }
             end
 
             before { existent_variant }

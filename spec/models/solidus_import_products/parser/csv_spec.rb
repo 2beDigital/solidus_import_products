@@ -10,8 +10,17 @@ RSpec.describe SolidusImportProducts::Parser::Csv do
 
     it { expect(csv_parsed).to be_a described_class }
     # TODO, better test for this.
-    it { expect(csv_parsed.column_mappings.size).to eq 17 }
+    it { expect(csv_parsed.column_mappings.size).to eq 19 }
     it { expect(csv_parsed.products_count).to eq 3 }
     it { expect(csv_parsed.variant_option_fields).to eq ['tshirt-color', 'tshirt-size'] }
+
+    it { expect(csv_parsed.property_fields).to eq ['brand'] }
+    it { expect(csv_parsed.property_field?('brand')).to eq true }
+
+    it { expect(csv_parsed.image_fields).to eq ['image_product'] }
+    it { expect(csv_parsed.image_field?('image_product')).to eq true }
+
+    it { expect(csv_parsed.variant_image_fields).to eq ['image_variant'] }
+    it { expect(csv_parsed.variant_image_field?('image_variant')).to eq true }
   end
 end

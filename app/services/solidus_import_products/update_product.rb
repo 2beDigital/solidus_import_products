@@ -20,21 +20,11 @@ module SolidusImportProducts
 
       properties_hash = {}
 
-      # Array of special fields. Prevent adding them to properties.
-      special_fields = Spree::ProductImport.settings.values_at(
-        :image_fields,
-        :taxonomy_fields,
-        :store_field,
-        :variant_comparator_field
-      ).flatten.map(&:to_s)
-
       product_information.each do |field, value|
-        if field.to_s.eql?('price')
-          product.price = convert_to_price(value)
-        elsif product.respond_to?("#{field}=")
-          product.send("#{field}=", value)
-        elsif !special_fields.include?(field.to_s) && (property = Spree::Property.where('lower(name) = ?', field).first)
-          properties_hash[property] = value
+        if field == :product_properties
+          value.each { |prop_field, prop_value| properties_hash[prop_field] = prop_value }
+        elsif field == :attributes
+          value.each { |attr_field, attr_value| product.send("#{attr_field}=", attr_value) if product.respond_to?("#{attr_field}=") }
         end
       end
 

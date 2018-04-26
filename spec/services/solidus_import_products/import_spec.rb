@@ -21,8 +21,15 @@ module SolidusImportProducts
           it { expect(valid_import.product_ids).to eq [Spree::Product.last.id] }
           it { expect(valid_import.products).to eq [Spree::Product.last] }
           it { expect(valid_import.reload.state).to eq 'completed' }
+
+          describe 'images' do
+            subject(:product) { Spree::Product.last }
+            # TODO: seguir desde aca.
+            it { expect(product.images.count).to eq 1 }
+          end
         end
 
+        # TODO: Test Variants.
         describe 'handles product properties' do
           subject(:with_properties) { SolidusImportProducts::Import.call(product_imports: imports_with_properties) }
 
@@ -45,6 +52,7 @@ module SolidusImportProducts
             expect(last_product.variants.count).to eq 2
           end
         end
+
 
         describe 'handles product taxons' do
           subject(:valid) { SolidusImportProducts::Import.call(product_imports: valid_import) }

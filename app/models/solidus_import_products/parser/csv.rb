@@ -12,6 +12,9 @@ module SolidusImportProducts
         self.data_file = data_file
         self.mappings = {}
         self.variant_option_fields = []
+        self.image_fields = []
+        self.variant_image_fields = []
+        self.property_fields = []
         encoding_csv = (options[:encoding_csv] if options) || DEFAULT_CSV_ENCODING
         separator_char = (options[:separator_char] if options) || DEFAULT_CSV_SEPARATOR
         csv_string = open(data_file, "r:#{encoding_csv}").read.encode('utf-8')
@@ -33,6 +36,27 @@ module SolidusImportProducts
       # @return true or false
       def variant_option_field?(field)
         variant_option_fields.include?(field.to_s)
+      end
+
+      # property_field?
+      # Class method that check if a field is a product property field
+      # @return true or false
+      def property_field?(field)
+        property_fields.include?(field.to_s)
+      end
+
+      # image_field?
+      # Class method that check if a field is an image field
+      # @return true or false
+      def image_field?(field)
+        image_fields.include?(field.to_s)
+      end
+
+      # variant_image_field?
+      # Class method that check if a field is a variant image field
+      # @return true or false
+      def variant_image_field?(field)
+        variant_image_fields.include?(field.to_s)
       end
 
       # data_rows
@@ -58,6 +82,13 @@ module SolidusImportProducts
           if field_name.include?('[opt]')
             field_name.gsub!('[opt]', '')
             variant_option_fields.push(field_name)
+          elsif field_name.include?('[prop]')
+            field_name.gsub!('[prop]', '')
+            property_fields.push(field_name)
+          elsif field_name.include?('image_product')
+            image_fields.push(field_name)
+          elsif field_name.include?('image_variant')
+            variant_image_fields.push(field_name)
           end
           mappings[field_name.to_sym] = index
         end
