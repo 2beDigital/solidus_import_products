@@ -11,3 +11,4 @@ nbproject
 .bundle
 spec/dummy
 Gemfile.lock
+coverage

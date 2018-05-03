@@ -13,7 +13,7 @@ FEATURES
 
 * A reasonably opinionated product import model should take the heavy lifting out of batch-importing products.
 * Using things like `class_eval`, it can be extended or changed to do more, less, or something differently.
-* Using delayed_job, the import is no longer processed when the user uploads the CSV file (**Note**: this requires the proper installation and configuration of delayed job). 
+* Using ActiveJob, the import is no longer processed when the user uploads the CSV file (**Note**: this requires the proper installation and configuration of ActiveJob).
 * Columns are mapped dynamically by default. This means that if you have a SKU column in your CSV file, it will be automatically set as the `sku` attribute of the Product model.
 * Multiple taxonomies are supported (By default, the importer looks for Brand and Taxonomy). Multiple taxonomy nesting is also supported. (See the 'Taxonomies' area below)
 * Multiple images are supported (By default, the importer looks for Image Main, Image 2, Image 3 and Image 4). Images can be loaded either from disk, or from a publicly-accessible URL.
@@ -21,11 +21,9 @@ FEATURES
 * It now uses the Ruby 1.9.2 standard CSV library (a.k.a FasterCSV).
 
 
-Sucker Punch
+ActiveJob
 ==============
-This gem will require (or will install for you), [sucker_punch](https://github.com/brandonhilkert/sucker_punch).
-
-For more information on Sucker Punch, and for help getting a worker running, see the [Github Project Page](https://github.com/brandonhilkert/sucker_punch)
+This gem relies on ActiveJob. For more information see [ActiveJob Rails Guide](http://guides.rubyonrails.org/active_job_basics.html)
 
 TAXONOMIES
 ==========
@@ -52,16 +50,12 @@ TESTING
 
 ```ruby
 rake test_app
-cd spec/dummy
-rake db:create
-rake db:migrate db:test:prepare
-rails generate import_products:install
+rake spec
 ```
 
 INSTALLATION
 ==============
 1. Add the gem to your Gemfile, and run bundle install.
-    `gem 'sucker_punch', '~> 2.0'`
     `gem 'import_products', :git => 'git://github.com/2BeDigital/solidus-import-products.git'` then `bundle install`
 
 2. rails generate solidus_import_products:install
@@ -69,6 +63,13 @@ INSTALLATION
 3. Configure the extension to suit your application by changing config variables in `config/initializers/import_product_settings.rb`
 
 4. Run application!
+
+
+SAMPLE FILEs
+==============
+
+Some basic samples files could be find in [spec/fixture](spec/fixture/)
+
 
 ATTRIBUTION
 ==============
