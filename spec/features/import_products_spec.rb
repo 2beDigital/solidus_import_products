@@ -1,10 +1,10 @@
 require 'spec_helper'
 include ActiveJob::TestHelper
 
-describe 'Import products' do
-  before { create(:store) }
+describe 'Import products', type: :feature do
 
   before do
+    create(:store)
     sign_in_as! create(:admin_user)
   end
 

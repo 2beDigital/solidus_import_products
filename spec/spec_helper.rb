@@ -14,7 +14,8 @@ RSpec.configure do |config|
       add_group 'Libraries', 'lib'
 
       add_filter '.bundle'
-      # add_filter 'lib/solidus_mercado_pago/version.rb'
+      add_filter 'lib/generators/solidus_import_products/install/install_generator.rb'
+      add_filter 'lib/generators/solidus_import_products/install/templates/config/initializers/solidus_import_product_settings.rb'
     end
   end
 end

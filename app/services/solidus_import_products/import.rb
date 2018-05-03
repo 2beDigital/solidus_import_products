@@ -15,7 +15,6 @@ module SolidusImportProducts
       skus_of_products_before_import = Spree::Product.all.map(&:sku)
       parser = product_imports.parse
       col = parser.column_mappings
-      variant_field = Spree::ProductImport.settings[:variant_comparator_field].try :to_sym
 
       product_imports.start
       ActiveRecord::Base.transaction do
@@ -25,7 +24,6 @@ module SolidusImportProducts
             product_imports: product_imports,
             row: row,
             col: col,
-            variant_field: variant_field,
             skus_of_products_before_import: skus_of_products_before_import
           )
         end

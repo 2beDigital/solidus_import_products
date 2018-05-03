@@ -5,6 +5,10 @@ FactoryBot.define do
     association :user, factory: :admin_user
   end
 
+  factory :full_product_import, parent: :product_import do
+    data_file { File.new(File.join(File.dirname(__FILE__), '..', 'fixtures', 'valid_full.csv')) }
+  end
+
   factory :invalid_product_import, parent: :product_import do
     data_file { File.new(File.join(File.dirname(__FILE__), '..', 'fixtures', 'invalid.csv')) }
   end

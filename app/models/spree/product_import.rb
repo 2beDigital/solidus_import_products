@@ -54,7 +54,7 @@ module Spree
     end
 
     def add_product(product)
-      product_ids << product.id unless product_ids.include?(product.id)
+      product_ids << product.id unless product?(product)
     end
 
     def product?(product)

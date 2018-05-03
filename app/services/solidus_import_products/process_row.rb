@@ -4,8 +4,7 @@ module SolidusImportProducts
 
     VARIANT_FIELD_NAME = :name
 
-    # TODO: remove variant_field up
-    def initialize(args = { parser: nil, product_imports: nil, row: nil, col: nil, variant_field: nil, skus_of_products_before_import: nil })
+    def initialize(args = { parser: nil, product_imports: nil, row: nil, col: nil, skus_of_products_before_import: nil })
       self.parser = args[:parser]
       self.product_imports = args[:product_imports]
       self.row = args[:row]
