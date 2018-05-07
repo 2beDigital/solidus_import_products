@@ -5,9 +5,9 @@ Gem::Specification.new do |s|
   s.summary     = "solidus_import_products ... imports products. From a CSV file via Solidus's Admin interface"
   s.required_ruby_version = '>= 2.2.2'
 
-  s.author            = 'ngelX'
-  s.email             = 'ngelx@protonmail.com'
-  s.homepage          = 'https://github.com/ngelx/solidus_import_products'
+  s.author            = 'NoelDiazMesa, ngelX'
+  s.email             = 'noel@2bedigital.com, ngelx@protonmail.com'
+  s.homepage          = 'https://github.com/2bedigital/solidus_import_products'
 
   s.files        = Dir['CHANGELOG', 'README.md', 'LICENSE', 'lib/**/*', 'app/**/*']
   s.require_path = 'lib'
