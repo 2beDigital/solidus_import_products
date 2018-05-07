@@ -56,11 +56,11 @@ rake spec
 INSTALLATION
 ==============
 1. Add the gem to your Gemfile, and run bundle install.
-    `gem 'import_products', :git => 'git://github.com/2BeDigital/solidus-import-products.git'` then `bundle install`
+    `gem 'solidus_import_products', :git => 'git://github.com/2BeDigital/solidus_import_products.git'` then `bundle install`
 
 2. rails generate solidus_import_products:install
 
-3. Configure the extension to suit your application by changing config variables in `config/initializers/import_product_settings.rb`
+3. Configure the extension to suit your application by changing config variables in `config/initializers/solidus_import_product_settings.rb`
 
 4. Run application!
 
@@ -68,7 +68,7 @@ INSTALLATION
 SAMPLE FILEs
 ==============
 
-Some basic samples files could be find in [spec/fixture](spec/fixture/)
+Some basic samples files could be find in [spec/fixtures](spec/fixtures/)
 
 
 ATTRIBUTION
