@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.name        = 'solidus_import_products'
-  s.version     = '1.1.0'
+  s.version     = '1.1.2'
   s.summary     = "solidus_import_products ... imports products. From a CSV file via Solidus's Admin interface"
   #s.description = 'Add (optional) gem description here'
   s.required_ruby_version = '>= 2.2.2'

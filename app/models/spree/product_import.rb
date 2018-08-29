@@ -292,8 +292,8 @@ module Spree
       end
 
       #Finally, attach any images that have been specified
-      ProductImport.settings[:image_fields_products].each do |field|
-        find_and_attach_image_to(product, params_hash[field.to_sym], params_hash[ProductImport.settings[:image_text_products].to_sym])
+      ProductImport.settings[:image_fields_products].each_with_index do |field,index|
+        find_and_attach_image_to(product, params_hash[field.to_sym], params_hash[ProductImport.settings[:image_text_products][index].to_sym])
       end
 
       if ProductImport.settings[:multi_domain_importing] && product.respond_to?(:stores)
@@ -360,8 +360,8 @@ module Spree
       if variant.valid?
         variant.save
         #Finally, attach any images that have been specified
-        ProductImport.settings[:image_fields_variants].each do |field|
-          find_and_attach_image_to(variant, options[:with][field.to_sym], options[:with][ProductImport.settings[:image_text_variants].to_sym])
+        ProductImport.settings[:image_fields_variants].each_with_index do |field,index|
+          find_and_attach_image_to(variant, options[:with][field.to_sym], options[:with][ProductImport.settings[:image_text_variants][index].to_sym])
         end
 
         #Log a success message
@@ -445,7 +445,7 @@ module Spree
                                         :viewable_id => product_or_variant.id,
                                         :viewable_type => "Spree::Variant",
                                         :alt => alt_text,
-                                        :position => product_or_variant.images.length
+                                        :position => product_or_variant.images.length + 1
                                        })
 
       log("#{product_image.viewable_id} : #{product_image.viewable_type} : #{product_image.position}",:debug)
