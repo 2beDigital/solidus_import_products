@@ -11,9 +11,14 @@
     <%= f.file_field :data_file %>
     <%= f.error_message_on :data_file %>
   <% end %>
+  <%= f.field_container :compress_image_file, class: ['form-group'] do  %>
+    <%= f.label :compress_image_file, t('form.product_import.new.compress_image_file') %><br />
+    <%= f.file_field :compress_image_file %>
+    <%= f.error_message_on :compress_image_file %>
+  <% end %>
   <div class="field">
     <%= f.label :separatorChar, t('form.product_import.separator_char') %><br />
-    <%= f.text_field :separatorChar, class: 'form-control required',:id =>  "separatorChar",:value => ";" ,:size => 1, :maxlength => 1 %>
+    <%= f.text_field :separatorChar, class: 'form-control required',:id =>  "separatorChar", :value => Spree::ProductImport.settings[:separator] ,:size => 1, :maxlength => 1 %>
   </div>
   <div class="field">
     <%= f.label :encoding_csv, t('form.product_import.encoding') %><br />
@@ -22,7 +27,7 @@
                    {:class => 'select2', :prompt => false}) %>
   </div>
   <div data-hook="buttons" class="form-actions">
-    <%= button Spree.t('actions.import'), 'ok', 'submit', {class: 'btn-success'} %>
+    <%= button t('spree.actions.import'), 'ok', 'submit', {class: 'btn-success'} %>
   </div>
   </fieldset>
 
@@ -33,37 +38,34 @@
   <colgroup>
     <col style="width: 15%">
     <col style="width: 20%">
-    <col style="width: 10%">
+    <col style="width: 20%">
     <col style="width: 15%">
     <col style="width: 10%">
-    <col style="width: 20%">
+    <col style="width: 15%">
     <col style="width: 5%">
   </colgroup>
   <thead>
   <tr>
-    <th>Date creation</th>
-    <th>CSV Name</th>
-    <th>Status</th>
-    <th>Date Status</th>
-    <th>Imported</th>
-    <th>Error Message</th>
-    <th class="actions">Actions</th>
+    <th><%= t('product_import.table.date_creation') %></th>
+    <th><%= t('product_import.table.csv_name') %></th>
+    <th><%= t('product_import.table.zip_name') %></th>
+    <th><%= t('product_import.table.status') %></th>
+    <th><%= t('product_import.table.date_status') %></th>
+    <th><%= t('product_import.table.imported') %></th>
+    <th class="actions"><%= t('product_import.table.actions') %></th>
   </tr>
   </thead>
   <tbody>
   <% Spree::ProductImport.order("created_at DESC").all.each do |import| %>
     <tr class="<%= cycle('odd', 'even') %>" id="<%= dom_id import %>">
       <td><%= I18n.l(import.created_at.to_datetime,format: :short)%></td>
-      <td><%= link_to import.data_file_file_name, import.data_file.url -%></td>
+      <td><%= import.data_file_file_name %></td>
+      <td><%= import.compress_image_file_file_name %></td>
       <td><span class="label-<%= import.state.downcase %>"><%= t(import.state, :scope => "product_import.state")%></span></td>
       <td><%= I18n.l(import.state_datetime.to_datetime,format: :short) %></td>
-      <td><%= import.product_ids.size -%></td>
-      <td><%= import.error_message%></td>
+      <td><%= import.product_ids.size %></td>
       <td class="actions text-center">
-        <%= link_to_edit import, :url => admin_product_import_path(import), :no_text => true -%>
-      </td>
-      <td class="actions text-center">
-        <%= link_to_delete import, :url => admin_product_import_path(import), :no_text => true -%>
+        <%= link_to_edit import, :url => admin_product_import_path(import), :no_text => true %>
       </td>
     </tr>
   <% end %>

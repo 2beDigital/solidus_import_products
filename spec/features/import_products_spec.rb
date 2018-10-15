@@ -11,6 +11,7 @@ describe 'Import products', type: :feature do
   it 'admin should be able to import products and delete import' do
     visit spree.admin_product_imports_path
     attach_file('product_import_data_file', File.join(File.dirname(__FILE__), '..', 'fixtures', 'valid.csv'))
+    attach_file('product_import_compress_image_file', File.join(File.dirname(__FILE__), '..', 'fixtures', 'images.zip'))
     fill_in('separatorChar', with: ',')
 
     perform_enqueued_jobs do

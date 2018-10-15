@@ -1,4 +1,5 @@
 es:
+  show_product_import: Detalle de Importación
   product_import_processing: "Gracias, su importación ha sido encolada para procesarse. Usted recibirá un mail de confirmación una vez se haya completado la importación."
   product_import_imported: "Productos importados correctamente"
   product_imports: "Importar Productos"
@@ -7,6 +8,7 @@ es:
   delete_product_import_successful: "La importación y los productos asociados se han borrado"
   confirm_delete_product_import: "Al borrar esta importación, se borrarán todos los productos asociados. Está usted seguro?"
   product_import_http_error: "Error al subir el fichero. Asegurese que el fichero está grabado como texto."
+  product_import_error: "Error al crear la importación. Asegurese que los ficheros se encuentran en el formato indicado"
   spree:
     admin:
       tab:
@@ -14,6 +16,18 @@ es:
     actions:
       import: "Importar"
   product_import:
+    table:
+      date_creation: Fecha Creación
+      csv_name: Fichero CSV
+      zip_name: Fichero ZIP
+      status: Estado
+      date_status: Fecha Estado
+      imported: Importado
+      error_message: Mensaje de Error
+      sku: Referencia
+      name: Nombre Producto
+      master_price: Precio Maestro
+      actions: Acciones
     state:
       created: "Creado"
       started: "En Progreso"
@@ -26,3 +40,4 @@ es:
       encoding: "Codificación"
       new:
         data_file: "Fichero de productos"
+        compress_image_file: "Fichero de imágenes comprimido (zip)"
