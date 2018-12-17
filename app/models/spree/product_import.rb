@@ -293,7 +293,7 @@ module Spree
 
       #Finally, attach any images that have been specified
       ProductImport.settings[:image_fields_products].each_with_index do |field,index|
-        find_and_attach_image_to(product, params_hash[field.to_sym], params_hash[ProductImport.settings[:image_text_products][index].to_sym])
+        find_and_attach_image_to(product.master, params_hash[field.to_sym], params_hash[ProductImport.settings[:image_text_products][index].to_sym])
       end
 
       if ProductImport.settings[:multi_domain_importing] && product.respond_to?(:stores)
