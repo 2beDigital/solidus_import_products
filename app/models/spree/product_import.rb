@@ -129,7 +129,7 @@ module Spree
           end
 
           #Manually set available_on if it is not already set
-          product_information[:available_on] = Date.today - 1.day if product_information[:available_on].nil?
+          #product_information[:available_on] = nil if product_information[:available_on].nil?
 
           if (product_information[:shipping_category_id].nil?)
             sc = Spree::ShippingCategory.first
