@@ -9,11 +9,13 @@ module Spree
 
     has_attached_file :data_file,
                       path: ':rails_root/tmp/product_data/data-files/:basename_:timestamp.:extension',
-                      url: ':rails_root/tmp/product_data/data-files/:basename_:timestamp.:extension'
+                      url: ':rails_root/tmp/product_data/data-files/:basename_:timestamp.:extension',
+                      storage: 'filesystem'
 
     has_attached_file :compress_image_file,
                       path: ':rails_root/tmp/product_data/data-files/:basename_:timestamp.:extension',
-                      url: ':rails_root/tmp/product_data/data-files/:basename_:timestamp.:extension'
+                      url: ':rails_root/tmp/product_data/data-files/:basename_:timestamp.:extension',
+                      storage: 'filesystem'
 
     belongs_to :user, class_name: 'Spree::User', foreign_key: 'created_by', inverse_of: :product_imports
 
@@ -60,10 +62,13 @@ module Spree
 
     def unzip
       dir = compress_image_path
-      Zip::File.open(compress_image_file.url(:default, timestamp: false)) do |zip_file|
-        zip_file.each do |f|
-          fpath = File.join(dir, f.name)
-          zip_file.extract(f, fpath) unless File.exist?(fpath)
+      file_path = compress_image_file.url(:default, timestamp: false)
+      if File.exist?(file_path)
+        Zip::File.open(file_path) do |zip_file|
+          zip_file.each do |f|
+            fpath = File.join(dir, f.name)
+            zip_file.extract(f, fpath) unless File.exist?(fpath)
+          end
         end
       end
       dir
@@ -91,14 +96,14 @@ module Spree
     end
 
     def destroy_data_uploaded
-      FileUtils.rm_rf(compress_image_path)
+      FileUtils.rm_rf(compress_image_path) unless compress_image_path.nil?
       data_file.destroy
       compress_image_file.destroy
     end
 
     def compress_image_path
       file_path = compress_image_file.url(:default, timestamp: false)
-      File.join(File.dirname(file_path), File.basename(file_path, '.zip'))
+      File.join(File.dirname(file_path), File.basename(file_path, '.zip')) if File.exists?(file_path)
     end
 
     def state_datetime
