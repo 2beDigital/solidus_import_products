@@ -129,7 +129,7 @@ module Spree
           end
 
           #Manually set available_on if it is not already set
-          #product_information[:available_on] = nil if product_information[:available_on].nil?
+          product_information[:available_on] = nil if product_information[:available_on].nil?
 
           if (product_information[:shipping_category_id].nil?)
             sc = Spree::ShippingCategory.first
@@ -190,7 +190,7 @@ module Spree
 
       params_hash.each do |field, value|
         if (field.to_s.eql?('price'))
-          product.price=convertToPrice(value)
+          product.price = convertToPrice(value)
         elsif (product.respond_to?("#{field}="))
           product.send("#{field}=", value)
         elsif not special_fields.include?(field.to_s) and property = Property.where("lower(name) = ?", field).first
@@ -238,7 +238,9 @@ module Spree
       end
       # We only assign fields of the products table.
       params_hash.each do |field, value|
-        if (product_fields.include?(field.to_s))
+        if (field.to_s.eql?('price') and params_hash[:sku] == product.master.sku and params_hash[:country_iso].present? and params_hash[:price].present? and params_hash[:currency].present?)
+          create_or_update_prices(product.master.id, params_hash)
+        elsif (product_fields.include?(field.to_s))
           if (product.respond_to?("#{field}=") and params_hash[:locale].nil?)
             product.send("#{field}=", value)
           end
@@ -323,7 +325,6 @@ module Spree
     # size/color options
     def create_variant_for(product, options = {:with => {}})
       return if options[:with].nil?
-
       # Just update variant if exists
       variant = Variant.find_by_sku(options[:with][:sku])
       raise SkuError, "SKU #{variant.sku} should belongs to #{product.inspect} but was #{variant.product.inspect}" if variant && variant.product != product
@@ -338,7 +339,9 @@ module Spree
       log("VARIANT:: #{variant.inspect}  /// #{options.inspect } /// #{options[:with][field]} /// #{field}",:debug)
 
       options[:with].each do |field, value|
-        if (field.to_s.eql?('price'))
+        if (variant.id.present? and field.to_s.eql?('price') and options[:with][:country_iso].present? and options[:with][:price].present? and options[:with][:currency].present?)
+          create_or_update_prices(variant.id,options[:with])
+        elsif (!variant.id.present? and field.to_s.eql?('price'))
           variant.price=convertToPrice(value)
         else
           variant.send("#{field}=", value) if variant.respond_to?("#{field}=")
@@ -615,6 +618,15 @@ module Spree
       end
       #We replace comma by dot.
       return priceStr.gsub(',', '.').to_f
+    end
+    def create_or_update_prices(id,params)
+      price = Spree::Price.find_by(variant_id: id, country_iso: params[:country_iso])
+      if price.present?
+        price.update_attributes(price: convertToPrice(params[:price]))
+      else
+        price = Spree::Price.new(variant_id: id, country_iso: params[:country_iso], price: convertToPrice(params[:price]), currency: params[:currency])
+        price.save
+      end
     end
   end
 end

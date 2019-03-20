@@ -14,7 +14,9 @@ Spree::ProductImport.settings = {
                           :image_4 => 11,
                           :description => 12,
                           :category => 13,
-                          :available_on => 14
+                          :available_on => 14,
+                          :country_iso => 15,
+                          :currency => 16
     },
     :num_prods_for_delayed => 20, #From this number of products, the process is executed in delayed_job. Under it is processed immediately.
     :create_missing_taxonomies => true,
