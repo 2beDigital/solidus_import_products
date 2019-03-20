@@ -8,7 +8,7 @@
   <fieldset class="no-border-top">
   <%= f.field_container :data_file, class: ['form-group'] do  %>
     <%= f.label :data_file, t('form.product_import.new.data_file') %><br />
-    <%= f.file_field :data_file %>
+    <%= f.file_field :data_file, :multiple => true %>
     <%= f.error_message_on :data_file %>
   <% end %>
   <div class="field">
