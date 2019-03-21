@@ -26,3 +26,9 @@ en:
       encoding: "Encoding"
       new:
         data_file: "Product Data File"
+  date_creation: Date Creation
+  csv_name: File name
+  status: Status
+  date_status: Status date
+  imported: Imported products
+  error_message: Error message

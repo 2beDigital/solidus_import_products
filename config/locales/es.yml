@@ -26,3 +26,9 @@ es:
       encoding: "Codificación"
       new:
         data_file: "Fichero de productos"
+  date_creation: Creado en
+  csv_name: Nombre del fichero
+  status: Estado
+  date_status: Fecha de estado
+  imported: Productos importados
+  error_message: Mensaje de error

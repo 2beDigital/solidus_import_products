@@ -63,20 +63,8 @@ module Spree
     def productsCount
       file_attached =  self.data_file.url(:default, timestamp: false)
       rows = CSV.parse(open(file_attached).read, :col_sep => separatorChar)
-			#rows = CSV.parse(open(self.data_file.url).read, :col_sep => ",", :quote_char => "'")
       return rows.count
     end
-
-    # def import
-    #   rows = CSV.parse(open(self.data_file.url).read)
-    #   delayed=rows.count>Spree::ProductImport.settings[:num_prods_for_delayed]
-    #   if (delayed)
-    #     ImportProductsJob.perform_later(self.id)
-    #   else
-    #     import_data!(Spree::ProductImport.settings[:transaction])
-    #   end
-    #   return delayed
-    # end
 
     def state_datetime
       if failed?
@@ -157,11 +145,6 @@ module Spree
             next unless create_product(product_information)
           end
         end
-
-        #2BeDigital.We disable this option
-        #if ProductImport.settings[:destroy_original_products]
-        #@products_before_import.each { |p| p.destroy }
-        #end
       end
       # Finished Importing!
       complete
@@ -177,7 +160,7 @@ module Spree
       product = Product.new
       properties_hash = Hash.new
 
-			#2BeDigital: Manually set retail_only if it is not already set
+			#Manually set retail_only if it is not already set
 			params_hash[:retail_only] = 0 if params_hash[:retail_only].nil?
 					
       # Array of special fields. Prevent adding them to properties.
@@ -214,7 +197,7 @@ module Spree
       log("UPATE PRODUCT:"+params_hash.inspect)
       properties_hash = Hash.new
 
-			#2BeDigital: If exists retail_only key without value, we assign false, to avoid null values.
+			#If exists retail_only key without value, we assign false, to avoid null values.
 			if (params_hash.key?(:retail_only) and params_hash[:retail_only].nil?) 
 				params_hash[:retail_only] = 0
 			end
@@ -501,13 +484,6 @@ module Spree
     # taxons with that product. This form should also work with format 1.
     def associate_product_with_taxon(product, taxonomy, taxon_hierarchy,putInTop)
       return if product.nil? || taxonomy.nil? || taxon_hierarchy.nil?
-
-      #Using find_or_create_by_name is more elegant, but our magical params code automatically downcases
-      # the taxonomy name, so unless we are using MySQL, this isn't going to work.
-      # taxonomy_name = taxonomy
-      # taxonomy = Taxonomy.find(:first, :conditions => ["lower(name) = ?", taxonomy])
-      # taxonomy = Taxonomy.create(:name => taxonomy_name.capitalize) if taxonomy.nil? && ProductImport.settings[:create_missing_taxonomies]
-
       taxon_hierarchy.split(/\s*\|\s*/).each do |hierarchy|
         hierarchy = hierarchy.split(/\s*>\s*/)
         taxonomy = Spree::Taxonomy.with_translations.where("lower(spree_taxonomy_translations.name) = ?", hierarchy.first.downcase).first
@@ -546,51 +522,21 @@ module Spree
         end
       end
     end
-    ### END TAXON HELPERS ###
 
-    # May be implemented via decorator if useful:
-    #
-    #    Spree::ProductImport.class_eval do
-    #
-    #      private
-    #
-    #      def after_product_built(product, params_hash)
-    #        super()
-    #        # do something with the product
-    #      end
-    #    end
     def after_product_built(product, params_hash)
       if (params_hash[:locale])
         add_translations(product, params_hash)
       end
     end
 
-    # TODO: Translate slug
     def add_translations(product, params_hash)
       localeProduct=params_hash[:locale]
       if (localeProduct.nil?) then return end
-
-      translations_names=product.translations.attribute_names
-      #product_fields=product.attribute_names
-      #Necesitamos "duplicar" el campo (de momento, slug) que nos sirve para detectar
-      #si el producto existe. Por tanto, si estamos traduciendo este campo, lo tendremos
-      #en dos columnas del csv. En una con el valor original, i en otra donde pondremos
-      #la traducción.
-      # if (params_hash.include?(ProductImport.settings[:variant_comparator_field_i18n]) )
-      #   translations_names.delete(ProductImport.settings[:variant_comparator_field].to_s)
-      #   #translations_names << ProductImport.settings[:variant_comparator_field_i18n].to_s
-      # end
-      translation=product.translations.where(locale: localeProduct).first_or_initialize
+      translations_names = product.translations.attribute_names
+      translation = product.translations.where(locale: localeProduct).first_or_initialize
       params_hash.each do |key,value|
         if translations_names.include?(key.to_s)
-          #Detectamos si el campo és el slug traducido, y en tal caso, lo añadimos
-          #con el nombre "slug"
-          #if (key.to_s==ProductImport.settings[:variant_comparator_field_i18n].to_s)
-          #translation.send("#{ProductImport.settings[:variant_comparator_field].to_s}=", value)
-          #product.attributes={ProductImport.settings[:variant_comparator_field].to_s => value, :locale => localeProduct}
-          #else
           translation.send("#{key.to_s}=", value)
-          #end
         end
       end
       translation.save
@@ -619,6 +565,7 @@ module Spree
       #We replace comma by dot.
       return priceStr.gsub(',', '.').to_f
     end
+
     def create_or_update_prices(id,params)
       price = Spree::Price.find_by(variant_id: id, country_iso: params[:country_iso])
       if price.present?

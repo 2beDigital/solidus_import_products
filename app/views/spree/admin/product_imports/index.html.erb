@@ -1,54 +1,51 @@
+<% admin_layout "full-width" %>
 <% content_for :page_title do %>
   <%= t('form.product_import.heading') %>
 <% end %>
 
-<div class="row">
-<div class="col-sm-6">
-<%= form_for([:admin, @product_import], :method => :post, :html => { :multipart => true }) do |f| %>
-  <fieldset class="no-border-top">
-  <%= f.field_container :data_file, class: ['form-group'] do  %>
-    <%= f.label :data_file, t('form.product_import.new.data_file') %><br />
-    <%= f.file_field :data_file, :multiple => true %>
-    <%= f.error_message_on :data_file %>
-  <% end %>
-  <div class="field">
-    <%= f.label :separatorChar, t('form.product_import.separator_char') %><br />
-    <%= f.text_field :separatorChar, class: 'form-control required',:id =>  "separatorChar",:value => ";" ,:size => 1, :maxlength => 1 %>
-  </div>
-  <div class="field">
-    <%= f.label :encoding_csv, t('form.product_import.encoding') %><br />
-    <%= f.select(:encoding_csv,
-                   options_from_collection_for_select(Spree::ProductImport::ENCODINGS, :to_s, :to_s, 'UTF-8'),
-                   {:class => 'select2', :prompt => false}) %>
-  </div>
-  <div data-hook="buttons" class="form-actions">
-    <%= button Spree.t('actions.import'), 'ok', 'submit', {class: 'btn-success'} %>
-  </div>
-  </fieldset>
-
+<% content_for :table_filter_title do %>
+  <%= t(:product_imports) %>
 <% end %>
-</div>
-</div>
+
+<% content_for :table_filter do %>
+  <div data-hook="admin_import_products_sidebar">
+    <%= form_for([:admin, @product_import], :method => :post, :html => { :multipart => true }) do |f| %>
+          <%= f.hidden_field :created_by, value: try_spree_current_user.id %>
+          <div class="container">
+            <div style='width:40%; display: inline-block;'>
+                <%= f.field_container :data_file do  %>
+                  <%= f.label :data_file, t('form.product_import.new.data_file') %><br />
+                  <%= f.file_field :data_file, :multiple => true, class: "select2 fullwidth"  %>
+                  <%= f.error_message_on :data_file %>
+                <% end %>
+            </div>
+            <div style='width:59%; display: inline-block;'>
+                <%= f.label :separatorChar, t('form.product_import.separator_char') %><br />
+                <%= f.text_field :separatorChar, class: 'form-control required', :id =>  "separatorChar",:value => ";" ,:size => 1, :maxlength => 1 %>
+            </div>
+            <div>
+                <%= f.label :encoding_csv, t('form.product_import.encoding') %><br />
+                <%= f.select :encoding_csv, Spree::ProductImport::ENCODINGS.collect { |encode| [encode, encode] }, { include_blank: false }, { class: "select2 fullwidth" } %>
+            </div>
+          </div>
+          <div class="actions filter-actions" data-hook="admin_import_products_index_import_buttons">
+            <%= button Spree.t('actions.import')%>
+          </div>
+    <% end %>
+  </div>
+<% end %>
+
 <table class="table">
-  <colgroup>
-    <col style="width: 15%">
-    <col style="width: 20%">
-    <col style="width: 10%">
-    <col style="width: 15%">
-    <col style="width: 10%">
-    <col style="width: 20%">
-    <col style="width: 5%">
-  </colgroup>
   <thead>
-  <tr>
-    <th>Date creation</th>
-    <th>CSV Name</th>
-    <th>Status</th>
-    <th>Date Status</th>
-    <th>Imported</th>
-    <th>Error Message</th>
-    <th class="actions">Actions</th>
-  </tr>
+    <tr>
+      <th ><%= t(:date_creation) %></th>
+      <th ><%= t(:csv_name) %></th>
+      <th ><%= t(:status) %></th>
+      <th ><%= t(:date_status) %></th>
+      <th ><%= t(:imported) %></th>
+      <th ><%= t(:error_message) %></th>
+      <th  class="actions"></th>
+    </tr>
   </thead>
   <tbody>
   <% Spree::ProductImport.order("created_at DESC").all.each do |import| %>
@@ -58,11 +55,9 @@
       <td><span class="label-<%= import.state.downcase %>"><%= t(import.state, :scope => "product_import.state")%></span></td>
       <td><%= I18n.l(import.state_datetime.to_datetime,format: :short) %></td>
       <td><%= import.product_ids.size -%></td>
-      <td><%= import.error_message%></td>
+      <td><%= import.error_message -%></td>
       <td class="actions text-center">
         <%= link_to_edit import, :url => admin_product_import_path(import), :no_text => true -%>
-      </td>
-      <td class="actions text-center">
         <%= link_to_delete import, :url => admin_product_import_path(import), :no_text => true -%>
       </td>
     </tr>
