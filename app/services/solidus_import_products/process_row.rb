@@ -75,8 +75,8 @@ module SolidusImportProducts
         sc = Spree::ShippingCategory.find_by(name: product_information[:attributes][:shipping_category_name].strip)
         if sc.nil? and Spree::ProductImport.settings[:create_missing_shipping_category]
           sc = Spree::ShippingCategory.create(name: product_information[:attributes][:shipping_category_name].strip)
-          product_information[:attributes][:shipping_category_id] = sc.id if sc
         end
+        product_information[:attributes][:shipping_category_id] = sc.id if sc
       end
 
       if product_information[:attributes][:shipping_category_id].nil?
@@ -88,8 +88,8 @@ module SolidusImportProducts
         tx = Spree::TaxCategory.find_by( { name: product_information[:attributes][:tax_category_name].strip } )
         if tx.nil? and Spree::ProductImport.settings[:create_missing_tax_category]
           tx = Spree::TaxCategory.create( { name: product_information[:attributes][:tax_category_name].strip } )
-          product_information[:attributes][:tax_category_id] = tx.id if tx
         end
+        product_information[:attributes][:tax_category_id] = tx.id if tx
       end
 
       if product_information[:attributes][:tax_category_id].nil?
