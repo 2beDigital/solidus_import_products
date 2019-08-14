@@ -1,4 +1,4 @@
-<% unless ENV['SOLIDUS_STORE_IMPORT_PRODUCT_SAMPLE'].nil? || ENV['SOLIDUS_STORE_IMPORT_PRODUCT_SAMPLE']&.strip&.empty? %>
+<% unless ENV['SOLIDUS_STORE_IMPORT_PRODUCT_SAMPLE']&.strip&.empty? %>
   <div class="field">
     <%= link_to t('product_import.sample'), "#{ENV['SOLIDUS_STORE_HOST_PROTOCOL']}://#{ENV['SOLIDUS_STORE_HOST_NAME']}:#{ENV['SOLIDUS_STORE_HOST_PORT']}/#{ENV['SOLIDUS_STORE_IMPORT_PRODUCT_SAMPLE']}" %>
   </div>

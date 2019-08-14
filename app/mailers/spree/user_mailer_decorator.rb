@@ -7,7 +7,7 @@ Spree::UserMailer.class_eval do
     store = Spree::Store.default
     # attachments["import_products.log"] = File.read(Spree::ProductImport.settings[:log_to]) if @error_message.nil?
     result = error_message.nil? ? t('spree.emailer.import.result_success') : t('spree.emailer.import.result_error')
-    mail(to: @user.email, from: from_address(store), subject: "#{t('spree.emailer.import.title')} #{result}")
+    mail(to: @user.email, from: @from, subject: "#{t('spree.emailer.import.title')} #{result}")
   end
 
 end
