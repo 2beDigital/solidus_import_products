@@ -176,7 +176,7 @@ module Spree
           product.price = convertToPrice(value)
         elsif (product.respond_to?("#{field}="))
           product.send("#{field}=", value)
-        elsif not special_fields.include?(field.to_s) and property = Property.where("lower(name) = ?", field).first
+        elsif not special_fields.include?(field.to_s) and property = Property.find_by(name: field)
           properties_hash[property] = value
         end
       end
@@ -227,7 +227,7 @@ module Spree
           if (product.respond_to?("#{field}=") and params_hash[:locale].nil?)
             product.send("#{field}=", value)
           end
-        elsif not special_fields.include?(field.to_s) and property = Property.where("lower(name) = ?", field).first
+        elsif not special_fields.include?(field.to_s) and property = Property.find_by(name: field)
           properties_hash[property] = value
         end
       end
@@ -266,9 +266,11 @@ module Spree
 
       #Associate properties with product
       properties_hash.each do |property, value|
-        product_property = Spree::ProductProperty.where(:product_id => product.id, :property_id => property.id).first_or_initialize
-        product_property.value = value
-        product_property.save!
+        if value.present?
+          product_property = Spree::ProductProperty.where(:product_id => product.id, :property_id => property.id).first_or_initialize
+          product_property.value = value
+          product_property.save!
+        end
       end
 
       #Associate our new product with any taxonomies that we need to worry about
