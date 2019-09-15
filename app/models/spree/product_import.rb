@@ -5,7 +5,7 @@
 # License:: MIT
 module Spree
   class ProductImport < ActiveRecord::Base
-    ENCODINGS = %w[UTF-8 iso-8859-1].freeze
+    ENCODINGS = %w[iso-8859-1 UTF-8].freeze
 
     has_attached_file :data_file,
                       path: ':rails_root/tmp/product_data/data-files/:basename_:timestamp.:extension',

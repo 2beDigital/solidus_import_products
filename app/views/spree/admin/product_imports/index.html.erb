@@ -23,7 +23,7 @@
   <div class="field">
     <%= f.label :encoding_csv, t('form.product_import.encoding') %><br />
     <%= f.select(:encoding_csv,
-                   options_from_collection_for_select(Spree::ProductImport::ENCODINGS, :to_s, :to_s, 'UTF-8'),
+                   options_from_collection_for_select(Spree::ProductImport::ENCODINGS, :to_s, :to_s, 'iso-8859-1'),
                    {:class => 'select2', :prompt => false}) %>
   </div>
   <div data-hook="buttons" class="form-actions">
