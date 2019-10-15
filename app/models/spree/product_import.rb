@@ -268,8 +268,14 @@ module Spree
       properties_hash.each do |property, value|
         if value.present?
           product_property = Spree::ProductProperty.where(:product_id => product.id, :property_id => property.id).first_or_initialize
-          product_property.value = value
-          product_property.save!
+          if params_hash[:locale].present?
+            translate = product_property.translations.where(locale: params_hash[:locale]).first_or_initialize
+            translate.value = value
+            translate.save!
+          else
+            product_property.value = value
+            product_property.save!
+          end
         end
       end
 
