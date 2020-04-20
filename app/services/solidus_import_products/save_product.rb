@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module SolidusImportProducts
   class SaveProduct
     attr_accessor :product, :product_information, :logger, :image_path

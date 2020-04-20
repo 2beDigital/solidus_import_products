@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Spree::PermissionSets::ProductManagement.class_eval do
 
   # Create an alias_method for the original activate! method as we need to execute it as it is

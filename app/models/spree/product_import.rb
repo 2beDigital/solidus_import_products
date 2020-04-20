@@ -1,21 +1,23 @@
+# frozen_string_literal: true
+
 # This model is the master routine for uploading products
 # Requires Paperclip and CSV to upload the CSV file and read it nicely.
 
 # Original Author:: Josh McArthur
 # License:: MIT
 module Spree
-  class ProductImport < ActiveRecord::Base
+  class ProductImport < ApplicationRecord
     ENCODINGS = %w[iso-8859-1 UTF-8].freeze
 
     has_attached_file :data_file,
-                      path: ':rails_root/tmp/product_data/data-files/:basename_:timestamp.:extension',
-                      url: ':rails_root/tmp/product_data/data-files/:basename_:timestamp.:extension',
-                      storage: 'filesystem'
+      path: ':rails_root/tmp/product_data/data-files/:basename_:timestamp.:extension',
+      url: ':rails_root/tmp/product_data/data-files/:basename_:timestamp.:extension',
+      storage: 'filesystem'
 
     has_attached_file :compress_image_file,
-                      path: ':rails_root/tmp/product_data/data-files/:basename_:timestamp.:extension',
-                      url: ':rails_root/tmp/product_data/data-files/:basename_:timestamp.:extension',
-                      storage: 'filesystem'
+      path: ':rails_root/tmp/product_data/data-files/:basename_:timestamp.:extension',
+      url: ':rails_root/tmp/product_data/data-files/:basename_:timestamp.:extension',
+      storage: 'filesystem'
 
     belongs_to :user, class_name: 'Spree::User', foreign_key: 'created_by', inverse_of: :product_imports
 
@@ -25,7 +27,8 @@ module Spree
 
     validates_attachment_presence :compress_image_file
     # Content type of zip vary in different browsers.
-    validates_attachment :compress_image_file, presence: true, content_type: { content_type: ['application/zip','application/octet-stream'] }
+    validates_attachment :compress_image_file, presence: true, content_type: { content_type: ['application/zip', 'application/octet-stream'] }
+
     validates_attachment_file_name :compress_image_file, matches: [/zip\Z/]
 
     after_destroy :destroy_products
@@ -57,7 +60,9 @@ module Spree
     end
 
     def parse
-      @_parse ||= SolidusImportProducts::Parser.parse(:csv, data_file.url(:default, timestamp: false), { encoding_csv: encoding_csv, separator_char: separatorChar })
+      options = { encoding_csv: encoding_csv, separator_char: separatorChar }
+      @parse ||= SolidusImportProducts::Parser.parse(:csv,
+        data_file.url(:default, timestamp: false), options)
     end
 
     def unzip
@@ -103,7 +108,7 @@ module Spree
 
     def compress_image_path
       file_path = compress_image_file.url(:default, timestamp: false)
-      File.join(File.dirname(file_path), File.basename(file_path, '.zip')) if File.exists?(file_path)
+      File.join(File.dirname(file_path), File.basename(file_path, '.zip')) if File.exist?(file_path)
     end
 
     def state_datetime

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module SolidusImportProducts
   # CreateVariant
   # This method assumes that some form of checking has already been done to

@@ -1,6 +1,10 @@
+# frozen_string_literal: true
+
 module SolidusImportProducts
   module Generators
     class InstallGenerator < Rails::Generators::Base
+      class_option :auto_run_migrations, type: :boolean, default: false
+
       def self.source_paths
         paths = superclass.source_paths
         paths << File.expand_path('../templates', "../../#{__FILE__}")

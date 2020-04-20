@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module SolidusImportProducts
   class Import
     attr_accessor :product_imports, :logger

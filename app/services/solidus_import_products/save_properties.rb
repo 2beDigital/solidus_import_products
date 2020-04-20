@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module SolidusImportProducts
   class SaveProperties
     attr_accessor :product, :properties_hash, :logger

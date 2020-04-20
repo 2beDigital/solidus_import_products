@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Spree::ProductImport.settings = {
   num_prods_for_delayed: 20, # From this number of products, the process is executed in delayed_job. Under it is processed immediately.
   create_missing_taxonomies: true,
