@@ -1,5 +1,5 @@
-SKU,Name,Description, Cost Price,Price,Available On,[Opt]tshirt-color,[Opt]tshirt-size,[Opt]xx-option,[Opt]yyy-option,Stock,Height,Width,Depth,Weight,Position,Taxonomies,Permalink,image_product,image_variant
-6234,S0388G Bloch Kids Tap Flexww,Lace Up Split Sole Leather Tap Shoe,29.25,54.46,1/1/10,,,,,2,3,4,9,1,0,Categories > Clothing,S0388G-bloch-kids-tap-flexewe,ruby_baseball.png,
-6236,S0388G Bloch Kids Tap Flexww,Lace Up Split Sole Leather Tap Shoe,29.25,54.46,1/1/10,White,Small,,,2,3,4,9,1,0,Categories > Clothing,S0388G-bloch-kids-tap-flexewe,,
-6235,S0388G Bloch Kids Tap Flexww,Lace Up Split Sole Leather Tap Shoe,29.25,54.46,1/1/10,Blue,Small,,,2,3,4,9,1,0,Categories > Clothing,S0388G-bloch-kids-tap-flexewe,,
-7235,S01234 Product Fuu,Product Fu description,20.00,50.00,,,,xxx1,yyy2,2,3,4,9,1,0,Categories > Clothing > another,,https://raw.githubusercontent.com/solidusio/solidus/master/sample/db/samples/images/ror_mug.jpeg,
+SKU,Name,Description, Cost Price,Price,Available On,[Opt]tshirt-color,[Opt]tshirt-size,[Opt]xx-option,[Opt]yyy-option,Stock,Backorderable,[Prop]Country,[Prop]Condition,Height,Width,Depth,Weight,Position,Taxonomies,Permalink,Shipping Category Name,Tax Category Name,image_product,image_variant
+6234,S0388G Bloch Kids Tap Flexww,Lace Up Split Sole Leather Tap Shoe,29.25,54.46,1/1/10,,,,,2,TRUE,UK,New,3,4,9,1,0,Categories > Clothing,S0388G-bloch-kids-tap-flexewe,Standard Product,Product Tax,images/ruby_baseball.png,
+6236,S0388G Bloch Kids Tap Flexww,Lace Up Split Sole Leather Tap Shoe,29.25,54.46,1/1/10,White,Small,,,2,TRUE,UK,Used,3,4,9,1,0,Categories > Clothing,S0388G-bloch-kids-tap-flexewe,Standard Product,Product Tax,,
+6235,S0388G Bloch Kids Tap Flexww,Lace Up Split Sole Leather Tap Shoe,29.25,54.46,1/1/10,Blue,Small,,,2,TRUE,UK,New,3,4,9,1,0,Categories > Clothing,S0388G-bloch-kids-tap-flexewe,Standard Product,Product Tax,,
+7235,S01234 Product Fuu,Product Fu description,20,50,,,,xxx1,yyy2,2,TRUE,UK,Used,3,4,9,1,0,Categories > Clothing > another,,Standard Product,Product Tax,https://raw.githubusercontent.com/solidusio/solidus/master/sample/db/samples/images/ror_mug.jpeg,

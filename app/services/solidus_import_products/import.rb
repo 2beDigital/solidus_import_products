@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module SolidusImportProducts
   class Import
     attr_accessor :product_imports, :logger
@@ -14,6 +16,7 @@ module SolidusImportProducts
     def call
       skus_of_products_before_import = Spree::Product.all.map(&:sku)
       parser = product_imports.parse
+      image_path = product_imports.unzip
       col = parser.column_mappings
 
       product_imports.start
@@ -24,15 +27,18 @@ module SolidusImportProducts
             product_imports: product_imports,
             row: row,
             col: col,
-            skus_of_products_before_import: skus_of_products_before_import
+            skus_of_products_before_import: skus_of_products_before_import,
+            image_path: image_path
           )
         end
       end
 
       product_imports.complete
-    rescue SolidusImportProducts::Exception::Base => e
+      product_imports.destroy_data_uploaded
+    rescue StandardError => se
       product_imports.failure!
-      raise e
+      product_imports.destroy_data_uploaded
+      raise se
     end
   end
 end

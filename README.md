@@ -33,9 +33,9 @@ The columns of the CSV that contain taxonomies is configurable. Each of these co
 Examples
 --------
 * Basic taxonomy association for Category: `Furniture`
-* Multiple taxonomy association for Category: `Furniture & Clearance`
+* Multiple taxonomy association for Category: `Furniture | Clearance`
 * Hierarchy taxonomy association for Category: `Furniture > Dining Room > Tables`
-* Multiple hierarchy taxonomy association for Category: `Furniture > Dining Room > Tables & Clearance > Hot this week`
+* Multiple hierarchy taxonomy association for Category: `Furniture > Dining Room > Tables | Clearance > Hot this week`
 
 CONFIGURATION
 =============
@@ -70,6 +70,10 @@ SAMPLE FILEs
 
 Some basic samples files could be find in [spec/fixtures](spec/fixtures/)
 
+IMAGE UPLOAD
+==============
+
+Now you can upload a ZIP file with the images for a particular CSV import. Just create a ZIP file with the image folder structure you want for your CSV and attach it during the Import Creation. Only ZIP file, not any other compression file are permitted.
 
 ATTRIBUTION
 ==============

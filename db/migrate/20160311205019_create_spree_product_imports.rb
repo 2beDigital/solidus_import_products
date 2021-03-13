@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateSpreeProductImports < SolidusSupport::Migration[4.2]
   def self.up
     create_table :spree_product_imports do |t|

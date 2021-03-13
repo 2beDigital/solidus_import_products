@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 module SolidusImportProducts
   class SaveProduct
-    attr_accessor :product, :product_information, :logger
+    attr_accessor :product, :product_information, :logger, :image_path
 
     include SolidusImportProducts::ImportHelper
 
@@ -8,10 +10,11 @@ module SolidusImportProducts
       new.call(options)
     end
 
-    def call(args = { product: nil, product_information: nil })
+    def call(args = { product: nil, product_information: nil, image_path: nil })
       self.logger = SolidusImportProducts::Logger.instance
       self.product_information = args[:product_information]
       self.product = args[:product]
+      self.image_path = args[:image_path]
 
       logger.log("SAVE PRODUCT: #{product.inspect}", :debug)
 
@@ -31,7 +34,7 @@ module SolidusImportProducts
 
       # Finally, attach any images that have been specified
       product_information[:images].each do |filename|
-        find_and_attach_image_to(product, filename)
+        find_and_attach_image_to(product, filename, image_path)
       end
 
       logger.log("#{product.name} successfully imported.\n")

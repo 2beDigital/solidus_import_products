@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Spree
   module Admin
     class ProductImportsController < BaseController
@@ -12,8 +14,12 @@ module Spree
 
       def create
         @product_imports = spree_current_user.product_imports.create(product_import_params)
-        ImportProductsJob.perform_later(@product_imports)
-        flash[:notice] = t('product_import_processing')
+        if !@product_imports.id.nil?
+          ImportProductsJob.perform_later(@product_imports)
+          flash[:notice] = t('product_import_processing')
+        else
+          flash[:error] = t('product_import_error')
+        end
         redirect_to admin_product_imports_path
       end
 

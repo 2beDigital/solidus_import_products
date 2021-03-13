@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module SolidusImportProducts
   # CreateVariant
   # This method assumes that some form of checking has already been done to
@@ -5,7 +7,7 @@ module SolidusImportProducts
   # It performs a similar task to a product, but it also must pick up on
   # size/color options
   class CreateVariant
-    attr_accessor :product, :variant, :product_information, :logger
+    attr_accessor :product, :variant, :product_information, :logger, :image_path
 
     include SolidusImportProducts::ImportHelper
 
@@ -13,10 +15,12 @@ module SolidusImportProducts
       new.call(options)
     end
 
-    def call(args = { product: nil, product_information: nil })
+    def call(args = { product: nil, product_information: nil, image_path: nil })
       self.logger = SolidusImportProducts::Logger.instance
       self.product_information = args[:product_information]
       self.product = args[:product]
+      self.image_path = args[:image_path]
+
       return if product_information.nil?
 
       load_or_initialize_variant
@@ -33,7 +37,7 @@ module SolidusImportProducts
         variant.save
 
         product_information[:variant_images].each do |filename|
-          find_and_attach_image_to(variant, filename)
+          find_and_attach_image_to(variant, filename, image_path)
         end
 
         stock_items
@@ -77,12 +81,12 @@ module SolidusImportProducts
 
     def get_or_create_option_type(field)
       Spree::OptionType.where('name = :field or presentation = :field', field: field.to_s).first ||
-        Spree::OptionType.create(name: field, presentation: field)
+        Spree::OptionType.create(name: field, presentation: field.to_s.titleize)
     end
 
     def get_or_create_option_value(option_type, value)
       option_type.option_values.where('name = :value or presentation = :value', value: value).first ||
-        option_type.option_values.create(presentation: value, name: value)
+        option_type.option_values.create(presentation: value, name: value.titleize)
     end
 
     def attach_image

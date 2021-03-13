@@ -12,3 +12,5 @@ nbproject
 spec/dummy
 Gemfile.lock
 coverage
+spec/dummy
+spec/examples.txt

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'active_support/concern'
 
 module SolidusImportProducts
@@ -11,10 +13,10 @@ module SolidusImportProducts
       # find_and_attach_image_to
       # This method attaches images to products. The images may come
       # from a local source (i.e. on disk), or they may be online (HTTP/HTTPS).
-      def find_and_attach_image_to(product_or_variant, filename)
+      def find_and_attach_image_to(product_or_variant, filename, image_path)
         return if filename.blank?
 
-        temp_file = fetch_image(filename)
+        temp_file = fetch_image(filename, image_path)
         return unless temp_file
         product_image = Spree::Image.new(attachment: temp_file,
                                          viewable_id: product_or_variant.id,
@@ -27,15 +29,15 @@ module SolidusImportProducts
         product_or_variant.images << product_image if product_image.save
       end
 
-      def fetch_image(filename)
-        filename =~ /\Ahttp[s]*:\/\// ? fetch_remote_image(filename) : fetch_local_image(filename)
+      def fetch_image(filename, image_path)
+        filename =~ /\Ahttp[s]*:\/\// ? fetch_remote_image(filename) : fetch_local_image(filename, image_path)
       end
 
       # This method is used when we have a set location on disk for
       # images, and the file is accessible to the script.
       # It is basically just a wrapper around basic File IO methods.
-      def fetch_local_image(filename)
-        filename = Spree::ProductImport.settings[:product_image_path] + filename
+      def fetch_local_image(filename, image_path)
+        filename = File.join(image_path, filename)
         unless File.exist?(filename) && File.readable?(filename)
           logger.log("Image #{filename} was not found on the server, so this image was not imported.", :warn)
           return nil

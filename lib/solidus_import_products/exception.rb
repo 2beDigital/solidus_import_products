@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module SolidusImportProducts
   module Exception
     class Base < StandardError; end

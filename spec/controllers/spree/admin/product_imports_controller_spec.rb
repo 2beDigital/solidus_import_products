@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 RSpec.describe Spree::Admin::ProductImportsController, type: :controller do
@@ -14,6 +16,7 @@ RSpec.describe Spree::Admin::ProductImportsController, type: :controller do
               product_import: {
                 separatorChar: ',',
                 data_file: Rack::Test::UploadedFile.new(Rails.root.join('..', 'fixtures', 'valid.csv')),
+                compress_image_file: Rack::Test::UploadedFile.new(Rails.root.join('..', 'fixtures', 'images.zip')),
                 encoding_csv: 'UTF-8'
               }
             }

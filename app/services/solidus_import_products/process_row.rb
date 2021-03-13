@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 module SolidusImportProducts
   class ProcessRow
-    attr_accessor :parser, :product_imports, :logger, :row, :col, :product_information, :variant_field, :skus_of_products_before_import
+    attr_accessor :parser, :product_imports, :logger, :row, :col, :product_information, :variant_field, :skus_of_products_before_import, :image_path
 
     VARIANT_FIELD_NAME = :name
 
-    def initialize(args = { parser: nil, product_imports: nil, row: nil, col: nil, skus_of_products_before_import: nil })
+    def initialize(args = { parser: nil, product_imports: nil, row: nil, col: nil, skus_of_products_before_import: nil, image_path: nil })
       self.parser = args[:parser]
       self.product_imports = args[:product_imports]
       self.row = args[:row]
@@ -13,6 +15,7 @@ module SolidusImportProducts
       self.skus_of_products_before_import = args[:skus_of_products_before_import]
       self.logger = SolidusImportProducts::Logger.instance
       self.product_information = { variant_options: {}, images: [], variant_images: [], product_properties: {}, attributes: {} }
+      self.image_path = args[:image_path]
     end
 
     def self.call(options = {})
@@ -39,14 +42,14 @@ module SolidusImportProducts
         product_imports.add_product(product)
       end
 
-      SolidusImportProducts::CreateVariant.call(product: product, product_information: product_information)
+      SolidusImportProducts::CreateVariant.call(product: product, product_information: product_information, image_path: image_path)
     end
 
     private
 
     def create_or_update_product(product)
       properties_hash = SolidusImportProducts::UpdateProduct.call(product: product, product_information: product_information)
-      SolidusImportProducts::SaveProduct.call(product: product, product_information: product_information)
+      SolidusImportProducts::SaveProduct.call(product: product, product_information: product_information, image_path: image_path)
       SolidusImportProducts::SaveProperties.call(product: product, properties_hash: properties_hash)
     end
 
@@ -70,9 +73,30 @@ module SolidusImportProducts
     def product_information_default_values
       product_information[:attributes][:available_on] = Time.zone.today - 1.day if product_information[:attributes][:available_on].nil?
 
+      unless product_information[:attributes][:shipping_category_name].nil?
+        sc = Spree::ShippingCategory.find_by(name: product_information[:attributes][:shipping_category_name].strip)
+        if sc.nil? and Spree::ProductImport.settings[:create_missing_shipping_category]
+          sc = Spree::ShippingCategory.create(name: product_information[:attributes][:shipping_category_name].strip)
+        end
+        product_information[:attributes][:shipping_category_id] = sc.id if sc
+      end
+
       if product_information[:attributes][:shipping_category_id].nil?
         sc = Spree::ShippingCategory.first
         product_information[:attributes][:shipping_category_id] = sc.id if sc
+      end
+
+      unless product_information[:attributes][:tax_category_name].nil?
+        tx = Spree::TaxCategory.find_by( { name: product_information[:attributes][:tax_category_name].strip } )
+        if tx.nil? and Spree::ProductImport.settings[:create_missing_tax_category]
+          tx = Spree::TaxCategory.create( { name: product_information[:attributes][:tax_category_name].strip } )
+        end
+        product_information[:attributes][:tax_category_id] = tx.id if tx
+      end
+
+      if product_information[:attributes][:tax_category_id].nil?
+        tx = Spree::TaxCategory.first
+        product_information[:attributes][:tax_category_id] = tx.id if tx
       end
 
       product_information[:attributes][:retail_only] = 0 if product_information[:attributes][:retail_only].nil?

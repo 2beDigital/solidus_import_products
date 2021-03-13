@@ -1,4 +1,5 @@
 en:
+  show_product_import: Show Product Info
   product_import_processing: "Thanks, your import has been added to the queue for processing. You will receive an email confirming the import once it has completed."
   product_import_imported: "Products imported successfully"
   product_imports: "Import Products"
@@ -7,6 +8,7 @@ en:
   delete_product_import_successful: "Import and products associated deleted successfully"
   confirm_delete_product_import: "Deleting this import will delete all the product associated, are you sure ?"
   product_import_http_error: "Error uploading file. Make sure the file is saved as text."
+  product_import_error: "Error creating the import. Make sure the files are in the right format."
   spree:
     admin:
       tab:
@@ -14,6 +16,18 @@ en:
     actions:
       import: "Import"
   product_import:
+    table:
+      date_creation: Date Creation
+      csv_name: CSV Name
+      zip_name: ZIP Name
+      status: Status
+      date_status: Data Status
+      imported: Imported
+      error_message: Error Message
+      sku: SKU
+      name: Name
+      master_price: Master Price
+      actions: Actions
     state:
       created: "Created"
       started: "In Progress"
@@ -26,3 +40,4 @@ en:
       encoding: "Encoding"
       new:
         data_file: "Product Data File"
+        compress_image_file: "Images Compressed Data File (zip)"

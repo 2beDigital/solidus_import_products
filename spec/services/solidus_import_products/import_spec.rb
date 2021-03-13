@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # rubocop:disable Lint/HandleExceptions
 
 require 'spec_helper'
@@ -21,7 +22,8 @@ module SolidusImportProducts
               product_imports: valid_import,
               row: duck_type(:each),
               col: kind_of(Hash),
-              skus_of_products_before_import: kind_of(Array)
+              skus_of_products_before_import: kind_of(Array),
+              image_path: kind_of(String)
             ).exactly(3).times
           valid
         end
@@ -33,7 +35,8 @@ module SolidusImportProducts
               product_imports: valid_import,
               row: duck_type(:each),
               col: kind_of(Hash),
-              skus_of_products_before_import: kind_of(Array)
+              skus_of_products_before_import: kind_of(Array),
+              image_path: kind_of(String)
             ).and_return true
           expect { valid }.to change { valid_import.reload.state }.to 'completed'
         end
@@ -50,7 +53,8 @@ module SolidusImportProducts
               product_imports: invalid_import,
               row: duck_type(:each),
               col: kind_of(Hash),
-              skus_of_products_before_import: kind_of(Array)
+              skus_of_products_before_import: kind_of(Array),
+              image_path: kind_of(String)
             ).and_raise SolidusImportProducts::Exception::Base
         end
 
