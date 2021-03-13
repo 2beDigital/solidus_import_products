@@ -10,7 +10,7 @@ module SolidusImportProducts
       end
 
       def add_migrations
-        run 'bundle exec rake railties:install:migrations FROM=solidus_import_products'
+        run 'bundle exec rake railties:install:migrations FROM=import_products'
       end
 
       def add_files
